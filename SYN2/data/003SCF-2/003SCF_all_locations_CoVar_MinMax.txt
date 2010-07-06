@@ -1,0 +1,3 @@
+"mu.x" "mu.y" "d2et" "slope" "elevm"
+"min" 0 0 0 0 681
+"max" 0 0 420 63 18.25

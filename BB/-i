@@ -1,0 +1,61 @@
+
+R version 2.10.1 (2009-12-14)
+Copyright (C) 2009 The R Foundation for Statistical Computing
+ISBN 3-900051-07-0
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> require(survival)
+Loading required package: survival
+Loading required package: splines
+> require(maptools)
+Loading required package: maptools
+Warning message:
+In library(package, lib.loc = lib.loc, character.only = TRUE, logical.return = TRUE,  :
+  there is no package called 'maptools'
+> require(sp)
+Loading required package: sp
+Warning message:
+In library(package, lib.loc = lib.loc, character.only = TRUE, logical.return = TRUE,  :
+  there is no package called 'sp'
+> require(snow)
+Loading required package: snow
+Warning message:
+In library(package, lib.loc = lib.loc, character.only = TRUE, logical.return = TRUE,  :
+  there is no package called 'snow'
+> 
+> ##get input file
+> ifile <- ""
+> i <- 0
+> options <- commandArgs()
+> for(option in options) {
++ 	   i <- i + 1
++ 	   if(option == "-i"){
++ 	   ifile <- options[i + 1]
++ 	   }
++ }
+> ##end get input file
+> print("Getting from")
+[1] "Getting from"
+> print(ifile)
+[1] ""
+> 
+> #create cluster for processing
+> #cluster.nodes <- c("localhost", "adam@mot", "adam@dataserver")
+> #cluster.nodes <- c("localhost", "adam@dataserver")
+> #c1 <- makeCluster(cluster.nodes, type="SOCK")
+> c1 <- makeCluster(47, type="MPI")
+Error: could not find function "makeCluster"
+Execution halted

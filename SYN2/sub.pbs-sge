@@ -1,0 +1,29 @@
+#!/bin/sh
+
+#Active comments for PBS
+#PBS -N syn
+#PBS -V    	
+#PBS -o syn.o
+#PBS -e syn.e
+#PBS -m bea
+#PBS -M well0358@vandals.uidaho.edu,cblair@vandals.uidaho.edu
+#PBS -l nodes=1:ppn=1,walltime=99:99:99
+
+#Active comments for SGE
+#$ -N syn
+#$ -cwd
+#$ -V    	
+#$ -o syn.o
+#$ -e syn.e
+#$ -m bea
+#$ -M well0358@vandals.uidaho.edu,cblair@vandals.uidaho.edu
+#$ -p -1
+
+#if [ -e pbs_server ]; then
+#	cd $PBS_O_WORKDIR
+#fi
+
+. /usr/modules/init/bash
+module load R
+
+R < SynopticModel_f5Summer.r --no-save -i $CLUSTER
