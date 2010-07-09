@@ -37,8 +37,6 @@ ma.getpotcolsize <- function() {
 
 cellgrid <- lapply(1:length(al$x), function(i) {
 	if(i %% 2 == 0) {
-		#print("Processing...")
-		#print(i)
 		xsection <- c(al$x[i-1], al$x[i], al$x[i+1])
 		ysection <- c(al$y[i-1], al$y[i], al$y[i+1])
 		xmin <- min(xsection)
@@ -60,41 +58,15 @@ cellgrid <- cellgrid[!is.na(cellgrid)]
 
 #reset the appropriate cellgrid vector element to an ma variable
 for(i in 1:length(cellgrid)) {
-	#print(cellgrid[i][[1]][[5]])
 	cellgrid[i][[1]][[5]] <- ma[1,]
 	for(j in 1:ncol(cellgrid[i][[1]][[5]])) {
 		cellgrid[i][[1]][[5]][,j] <- NA
 	}
-	#print(cellgrid[i][[1]][[5]])
 }
-
-#test <- ma[1,]
-#test[1][[1]] <- NA
-#test[2][[1]] <- NA
-#test[3][[1]] <- NA
-#test[4][[1]] <- NA
-#test[5][[1]] <- NA
-#testi <- function () {
-#test2 <- data.frame(x=1, y=2, d2et=3, slope=4, elevm=5)
-#test3 <- data.frame(x=6, y=7, d2et=8, slope=9, elevm=10)
-#cellgrid[1][[1]][[5]] <- rbind(cellgrid[1][[1]][[5]], test2)
-#cellgrid[1][[1]][[5]] <- rbind(cellgrid[1][[1]][[5]], test3)
-#}
-#testi()
-#test <- rbind(test, test3)
-#test
-#cellgrid[1][[1]][[5]]
-#q()
 
 al.addToLocCells <- function(row) {
 	for(j in 1:length(cellgrid)) {
-		#print(cellgrid[j][[1]])
-		#print(row$x)
-		#print((row$x <= cellgrid[j][[1]]$xmax))
 		if(((row$x >= cellgrid[j][[1]]$xmin) && (row$x <= cellgrid[j][[1]]$xmax) && (row$y >= cellgrid[j][[1]]$ymin) && (row$y <= cellgrid[j][[1]]$ymax))) {
-			#print("inserting into cell:")
-			#print(j)
-			#print(cellgrid[j][[1]][[5]])
 			cellgrid[j][[1]][[5]] <<- rbind(cellgrid[j][[1]][[5]], row)
 		}
 	}
