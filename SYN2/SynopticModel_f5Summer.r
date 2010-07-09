@@ -71,7 +71,6 @@ minmaxfilename
 minmax = read.table(minmaxfilename, sep='\t',header=TRUE, as.is=TRUE) 
 colmin <- c()
 colmax <- c()
-ncol(minmax)
 for(i in 1:ncol(minmax)) {
 	colmin <- c(colmin, min(minmax[,i]))
 	colmax <- c(colmax, max(minmax[,i]))
