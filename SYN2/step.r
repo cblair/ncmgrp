@@ -61,13 +61,19 @@ for(i in 1:length(cellgrid)) {
 	cellgrid[i][[1]][[5]] <- ma[1,]
 	for(j in 1:ncol(cellgrid[i][[1]][[5]])) {
 		cellgrid[i][[1]][[5]][,j] <- NA
+		#cellgrid[i][[1]][[5]][,j] <- character(0)
 	}
 }
 
 al.addToLocCells <- function(row) {
 	for(j in 1:length(cellgrid)) {
 		if(((row$x >= cellgrid[j][[1]]$xmin) && (row$x <= cellgrid[j][[1]]$xmax) && (row$y >= cellgrid[j][[1]]$ymin) && (row$y <= cellgrid[j][[1]]$ymax))) {
-			cellgrid[j][[1]][[5]] <<- rbind(cellgrid[j][[1]][[5]], row)
+			if(is.na(cellgrid[j][[1]][[5]])) {
+				cellgrid[j][[1]][[5]] <<- row
+			}
+			else {
+				cellgrid[j][[1]][[5]] <<- rbind(cellgrid[j][[1]][[5]], row)
+			}
 		}
 	}
 }
@@ -81,9 +87,14 @@ by(ma, 1:nrow(ma), function(row) {
 	#print("cell grip proc time:")
 	#print(runtime)
 	z <<- z + 1
-	print("loc done")
-	print(z)
+	#print("loc done")
+	#print(z)
  }
 )
 
-cellgrid
+#write each ma to file
+for(row in cellgrid) {
+	if(!is.na(row[[5]])) {
+		write.table(row[[5]], file=paste(workdir,"/",row$xmin,"-",row$xmax,"-",row$ymin,"-",row$ymax,"_ma.txt",sep=""), append=TRUE, quote=FALSE, row.names=FALSE, sep="\t")
+	}
+}
