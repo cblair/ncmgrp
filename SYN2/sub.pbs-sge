@@ -26,4 +26,5 @@
 . /usr/modules/init/bash
 module load R
 
-R < SynopticModel_f5Summer.r --no-save -i $CLUSTER
+R < step.r --no-save -i 003SCF
+#R < SynopticModel_f5Summer.r --no-save -i $CLUSTER

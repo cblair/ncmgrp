@@ -87,8 +87,8 @@ by(ma, 1:nrow(ma), function(row) {
 	#print("cell grip proc time:")
 	#print(runtime)
 	z <<- z + 1
-	#print("loc done")
-	#print(z)
+	print("loc done")
+	print(z)
  }
 )
 
