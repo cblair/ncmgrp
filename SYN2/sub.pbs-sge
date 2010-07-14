@@ -10,11 +10,8 @@
 #PBS -l nodes=1:ppn=1,walltime=99:99:99
 
 #Active comments for SGE
-# -N step-bb-syn
 #$ -cwd
 #$ -V    	
-#$ -o step-bb-syn.o
-#$ -e step-bb-syn.e
 #$ -m bea
 #$ -M well0358@vandals.uidaho.edu,cblair@vandals.uidaho.edu
 #$ -p -1
@@ -26,5 +23,5 @@
 . /usr/modules/init/bash
 module load R
 
-R < step.r --no-save -i 003SCF
+R < step.r --no-save -i $CLUSTER
 #R < SynopticModel_f5Summer.r --no-save -i $CLUSTER

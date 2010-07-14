@@ -1,0 +1,5 @@
+#!/bin/sh
+
+JOBDATA=jobdata
+
+qsub -N step-$1 -o $JOBDATA/step-$1.o -e $JOBDATA/step-$1.e -v CLUSTER=$1 sub.pbs-sge
