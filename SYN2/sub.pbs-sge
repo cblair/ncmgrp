@@ -3,8 +3,6 @@
 #Active comments for PBS
 # -N step-bb-syn
 #PBS -V    	
-#PBS -o step-bb-syn.o
-#PBS -e step-bb-syn.e
 #PBS -m bea
 #PBS -M well0358@vandals.uidaho.edu,cblair@vandals.uidaho.edu
 #PBS -l nodes=1:ppn=1,walltime=99:99:99
@@ -17,7 +15,7 @@
 #$ -p -1
 
 #if [ -e pbs_server ]; then
-#	cd $PBS_O_WORKDIR
+	cd $PBS_O_WORKDIR
 #fi
 
 . /usr/modules/init/bash

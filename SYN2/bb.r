@@ -18,14 +18,14 @@ c1 <- makeCluster(4, type="MPI")
 #        header=TRUE, as.is=TRUE)
 
 # Convert time to Julian 
-locs$Date =  as.Date(locs$Date, "%m/%d/%Y")
-tmp = unlist(strsplit(locs$Hour, ":"))
-tmp2 = rep(c(1:2), nrow(locs)/2)
-Hour = as.numeric(tmp[tmp2 == 1])
-Minute = as.numeric(tmp[tmp2 == 2])
-locs$Julian = as.numeric(round((julian(locs$Date) - 1)*24*60 + 
-                Hour*60 + Minute, 0))
-locs = locs[order(locs$Julian),]
+#locs$Date =  as.Date(locs$Date, "%m/%d/%Y")
+#tmp = unlist(strsplit(locs$Hour, ":"))
+#tmp2 = rep(c(1:2), nrow(locs)/2)
+#Hour = as.numeric(tmp[tmp2 == 1])
+#Minute = as.numeric(tmp[tmp2 == 2])
+#locs$Julian = as.numeric(round((julian(locs$Date) - 1)*24*60 + 
+#                Hour*60 + Minute, 0))
+#locs = locs[order(locs$Julian),]
     
 
 #-------------------------------------------------------------------
