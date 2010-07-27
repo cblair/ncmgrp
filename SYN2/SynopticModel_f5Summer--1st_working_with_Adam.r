@@ -4,11 +4,12 @@
 # read in files:
 #(1) set working directory with input files
 #workdir = choose.dir(caption="Select folder with input files")
-workdir = "/mnt/home/awells/SYN2"
-#setwd(workdir)
+basedir = getwd()
+workdir = paste(getwd(),"/data/003SCF",sep="")
+setwd(workdir)
 
 #(2) choose file containing functions: GeneralFramework_SynopticModels.R
-source(file = "GeneralFrameWorkFitSynopticModels_11_AllExtents.r")
+source(file = paste(basedir,"/gen.r",sep=""))
 
 #(3) choose locations file:
 #locationsfile = "f5_summer_buffer_locs.txt"

@@ -1,5 +1,16 @@
 #!/bin/sh
 
+MODE=""
+NODES=""
+if [ $# -lt 1 ] || [ $# -gt 2 ]; then
+	echo $#'Usage: sub-sub <cluster name> [nodes for parallely processing]'
+	exit 1
+fi
+if [ $# -eq 2 ]; then
+	MODE="-p $2"
+	NODES="-pe orte $2"
+fi
+
 JOBDATA=jobdata
 
-qsub -N step-$1 -o $JOBDATA/step-$1.o -e $JOBDATA/step-$1.e -v CLUSTER=$1 sub.pbs-sge
+qsub -N step-$1 -o $JOBDATA/step-$1.o -e $JOBDATA/step-$1.e -v CLUSTER=$1 -v MODE="$MODE" $NODES sub.pbs-sge

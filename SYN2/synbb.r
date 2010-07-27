@@ -1,12 +1,20 @@
 source("step.r")
 source("bb.r")
+source("syn.r")
+require(survival)
+require(maptools)
+require(sp)
+require(Rmpi)
 
 ################################################
 #Handle Options
 i <- 0
 cluster <- ""
 bb.only <- FALSE
-jh.to.js <- FALSE
+syn.only <- FALSE
+parallel <- FALSE
+do.to.js <- FALSE #date offset to julian seconds
+nodes <- 1
 options <- commandArgs()
 for(option in options) {
 	i <- i + 1
@@ -17,9 +25,23 @@ for(option in options) {
 	if(option == "--bb-only") {
 		bb.only <- TRUE
 	}
-	if(option == "--jh-to-js") {
-		jh.to.js <- TRUE
+	if(option == "--syn-only") {
+		syn.only <- TRUE
 	}
+	if(option == "--do-to-js") {
+		do.to.js <- TRUE
+	}
+	if(option == "-p") {
+		parallel <- TRUE
+		nodes <- options[i + 1]
+	}
+}
+
+###############################################
+#Parallel Setup
+if(parallel == TRUE) {
+	require(snow)
+	c1 <- makeCluster(nodes, type="MPI")
 }
 
 #################################################
@@ -38,19 +60,32 @@ ma = read.table(masterfname, sep='\t',header=TRUE, as.is=TRUE)
 
 #################################################
 #Process
-if(jh.to.js == TRUE) {
-	al$Julian <- al$Time * 60 * 60
+if(do.to.js == TRUE) {
+	al$Julian <- al$Time * 24 * 60 * 60
 	al = al[order(al$Julian),]
-	al
 }
 if(bb.only == TRUE) {
 	print("Need to test with original bb data.")
 	bb(al)
 	q()
 }
+if(syn.only == TRUE) {
+	print("Need to test with original data.")
+	syn(al,ma)
+	q()
+}
 
-
+#else, we are doing bb and syn by triplicates
 cellgrid = step()
+lapply(1:length(cellgrid), function(i) {
+	print(paste("Running bb for cellgrid",i,"of",length(cellgrid)))
+	cellgrid[i][[1]][[3]]$Julian <- cellgrid[3][[1]][[3]]$Time * 24 * 60
+	bb(cellgrid[i][[1]][[3]])
+	print(paste("Running syn for cellgrid",i,"of",length(cellgrid)))
+	syn(cellgrid[i][[1]][[3]],cellgrid[i][[1]][[2]])
+ }
+)
 
-cellgrid[3][[1]][[3]]
-bb(cellgrid[3][[1]][[3]])
+if(parallel == TRUE) {
+	stopCluster(c1)
+}

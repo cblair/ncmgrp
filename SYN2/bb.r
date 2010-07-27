@@ -1,22 +1,4 @@
-require(survival)
-require(maptools)
-require(sp)
-require(Rmpi)
-require(snow)
-
 bb <- function(locs) {
-#create cluster for processing
-#cluster.nodes <- c("localhost", "adam@mot", "adam@dataserver")
-#cluster.nodes <- c("localhost", "adam@dataserver")
-#c1 <- makeCluster(cluster.nodes, type="SOCK")
-c1 <- makeCluster(4, type="MPI")
-
-# Read in GPS locations of migraion
-#locs = read.table("data/gps53_spring06.txt", sep='\t', 
-#        header=TRUE, as.is=TRUE)
-#locs = read.table(ifile, sep='\t', 
-#        header=TRUE, as.is=TRUE)
-
 # Convert time to Julian 
 #locs$Date =  as.Date(locs$Date, "%m/%d/%Y")
 #tmp = unlist(strsplit(locs$Hour, ":"))
@@ -46,8 +28,7 @@ c1 <- makeCluster(4, type="MPI")
 #-------------------------------------------------------------------
 
 BrownianBridge <- function(X, Y, Time, LocationError, cell.size=50){
-
-	options(digits=20)
+    options(digits=20)
 
     max.lag = abs(min(diff(Time))+1)
 
@@ -63,11 +44,11 @@ BrownianBridge <- function(X, Y, Time, LocationError, cell.size=50){
 	x = rep(x, length(y))
 	y = sort(rep(y, length(x)/length(y)))
 	grid = data.frame(x, y)
-	cat("Size of grid =", length(unique(grid$y)), "X", 
-            length(unique(grid$x)), fill=TRUE)
+	#cat("Size of grid =", length(unique(grid$y)), "X", 
+        #    length(unique(grid$x)), fill=TRUE)
 
 	n.locs = length(X)
-    cat("Number of animal locations =", n.locs, fill=TRUE)
+    #cat("Number of animal locations =", n.locs, fill=TRUE)
 
     #--------------------------------------------------------------
 	#Calculate Brownian motion variance "BMvar"
@@ -100,8 +81,8 @@ BrownianBridge <- function(X, Y, Time, LocationError, cell.size=50){
     	-sum(log(l), na.rm=T)
     }
     BMvar = nlminb(start=10000, likelihood, lower=10)$par
-    cat("Brownian Motion Variance (meters^2) =", round(BMvar), 
-        fill=TRUE)
+    #cat("Brownian Motion Variance (meters^2) =", round(BMvar), 
+    #    fill=TRUE)
     BMvar = rep(BMvar, length(X))
 
 	#Estimate Brownian bridge
@@ -111,7 +92,8 @@ BrownianBridge <- function(X, Y, Time, LocationError, cell.size=50){
 	probability = NULL
 	int = 0
 	#map
-	intmap <- parLapply(c1, 1:(n.locs-1), function(i) {
+	#intmap <- parLapply(c1, 1:(n.locs-1), function(i) {
+	intmap <- lapply(1:(n.locs-1), function(i) {
                 proctime1 = proc.time()
 		if(Time.Diff[i] <= max.lag){
 			theta = NULL
@@ -142,7 +124,6 @@ BrownianBridge <- function(X, Y, Time, LocationError, cell.size=50){
 	)
 
 	#reduce
-	print("Start Reduce")
 	int = 0
 	i = 1
 	while(i < length(intmap)) {
@@ -164,10 +145,18 @@ BrownianBridge <- function(X, Y, Time, LocationError, cell.size=50){
     prob = sort(BB$probability)
 	cumprob = round(cumsum(prob), 4)
 	contour99 = max(prob[cumprob <= (1-0.99)])
-    #windows(height=6, width=8)
-	z = matrix(BB$probability, nrow=length(unique(BB$x)), 
-        ncol=length(unique(BB$y)), byrow=T)
-    contour(x=unique(BB$x), y=unique(BB$y), z, levels=contour99, drawlabels=F, xlab="X", ylab="Y")
+#windows(height=6, width=8)
+	z = matrix(BB$probability, nrow=length(unique(BB$x)), ncol=length(unique(BB$y)), byrow=T)
+	if(contour99 == -Inf) {
+		print("Contour map error")
+		return(data.frame())
+	}
+	if((length(z[1,]) < 2) == TRUE) {
+		print(paste("Z matrix error:",length(z[1,]),length(z[1,]) < 2))
+		return(data.frame())
+	}
+
+        contour(x=unique(BB$x), y=unique(BB$y), z, levels=contour99, drawlabels=F, xlab="X", ylab="Y")
     points(X, Y, pch=19, cex=0.2, col="steelblue")
     lines(X, Y, lwd=0.5, col="steelblue")
 
@@ -176,27 +165,24 @@ BrownianBridge <- function(X, Y, Time, LocationError, cell.size=50){
 }
 
 # Create output ASCII file with probabilities (scaled so max=1000)
-print("Brown Bridge Runtime...")
-system.time(density <- BrownianBridge(locs$X, locs$Y, Time=locs$Julian, 
+system.time(density <- BrownianBridge(locs$x, locs$y, Time=locs$Julian, 
             LocationError=20, cell.size=30)
 	    )
 bb = density
+if(length(bb) == 0) {return()}
 
-print("round func runtime...")
-system.time(bb$probability <- round(bb$probability*1000/max(bb$probability), 0))
+bb$probability <- round(bb$probability*1000/max(bb$probability), 0)
 
-print("data.fram runtime...")
-system.time(m <- data.frame(bb))
+m <- data.frame(bb)
 
-print("SpatialPixelDataFrame runtime...")
-system.time(m <- SpatialPixelsDataFrame(points = m[c("x", "y")], data=m))
+m <- SpatialPixelsDataFrame(points = m[c("x", "y")], data=m)
 
-print("SpatialGridDataFrame runtime...")
-system.time(m <- as(m, "SpatialGridDataFrame"))
+m <- as(m, "SpatialGridDataFrame")
 
-print("writeAsciiGrid runtime...")
-system.time(writeAsciiGrid(m, paste(ifile, "example_grid.asc", sep=""), attr=3))
+writeAsciiGrid(m, paste(cluster,"-",min(locs$x),"-",max(locs$x),"-",min(locs$y),"-",max(locs$y),"_example_grid.asc", sep=""), attr=3)
 
-stopCluster(c1)
+#move rplots file to respective 
+#system(paste("mv Rplots.pdf ",cluster,"-",min(locs$x),"-",max(locs$x),"-",min(locs$y),"-",max(locs$y),"_rplots.pdf", sep=""))
+
 
 }#end bb func

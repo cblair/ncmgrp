@@ -1,18 +1,22 @@
 # Synoptic Model for Analyzing Animal Space Use
 # By: Jon Horne; jhorne@uidaho.edu
 
-syn <- function() {
+locAvailFile <- c()
+
+syn <- function(al, ma) {
 	#(2) choose file containing functions: GeneralFramework_SynopticModels.R
 	genfile = paste(basedir,"/gen.r",sep="")
 	source(file = genfile)
 
 	#(3) choose locations file:
-	locationsfile = paste(cluster, "_all_locations.txt", sep="") 
+	#locationsfile = paste(cluster, "_all_locations.txt", sep="") 
  
-	origfilename = strsplit(locationsfile,"\\.")[[1]][1]
-	Track = as.matrix(read.table(file= locationsfile,head=T,sep=''))
+	#origfilename = strsplit(locationsfile,"\\.")[[1]][1]
+	origfilename = paste(cluster,"-",min(al$x),"-",max(al$x),"-",min(al$y),"-",max(al$y), sep="")
+	#Track = as.matrix(read.table(file= locationsfile,head=T,sep=''))
+	Track = as.matrix(al)
 	#separate text refering to availability file from track data
-	locAvailFile=Track[,ncol(Track)]
+	locAvailFile <<- Track[,ncol(Track) - 1]
 	Track = apply(Track[,1:(ncol(Track)-1)],2,as.numeric)
 	#(4) specify which variables will be used: use '1' to specify a variable that will be
 	# used and '0' for variables that will not be used
@@ -31,9 +35,15 @@ syn <- function() {
 	AvailFileNames = table(locAvailFile)
 	AvailList=list()
 	for (i in 1:length(AvailFileNames)){
-		#these two lines to test
-		filename = paste(workdir,"/",names(AvailFileNames)[i],sep="")
-		habmat = as.matrix(read.table(file=filename,head=T,sep=''))
+		#filename = paste(workdir,"/",names(AvailFileNames)[i],sep="")
+		#habmat = as.matrix(read.table(file=filename,head=T,sep=''))
+		#filter unwanted columns
+		altemp <- al
+		altemp$ExtentFile <- NULL
+		altemp$Time <- NULL
+		altemp$Julian <- NULL
+		habmat = as.matrix(altemp)
+		habmat = apply(habmat[,1:(ncol(habmat))],2,as.numeric)
 		AvailList[i] = list(habmat)
 	}
 	names(AvailList)=names(AvailFileNames)

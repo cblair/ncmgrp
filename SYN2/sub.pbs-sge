@@ -14,12 +14,12 @@
 #$ -M well0358@vandals.uidaho.edu,cblair@vandals.uidaho.edu
 #$ -p -1
 
-#if [ -e pbs_server ]; then
+if [ -e /usr/local/sbin/pbs_mom ]; then
 	cd $PBS_O_WORKDIR
-#fi
+fi
 
 . /usr/modules/init/bash
 module load R
 
-R < step.r --no-save -i $CLUSTER
-#R < SynopticModel_f5Summer.r --no-save -i $CLUSTER
+echo R < synbb.r --no-save -c $CLUSTER --do-to-js $MODE
+R < synbb.r --no-save -c $CLUSTER --do-to-js $MODE
