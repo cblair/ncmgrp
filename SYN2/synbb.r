@@ -65,6 +65,7 @@ if(do.to.js == TRUE) {
 	al = al[order(al$Julian),]
 }
 if(bb.only == TRUE) {
+	synbb.outfile <- cluster
 	print("Need to test with original bb data.")
 	bb(al)
 	q()
@@ -76,8 +77,11 @@ if(syn.only == TRUE) {
 }
 
 #else, we are doing bb and syn by triplicates
+synbb.outfile = "step"
 cellgrid = step()
 lapply(1:length(cellgrid), function(i) {
+	#synbb.outfile = paste(cluster,"-",min(cellgrid[i][[1]][[3]]$x),"-",max(cellgrid[i][[1]][[3]]$x),"-",min(cellgrid[i][[1]][[3]]$y),"-",max(cellgrid[i][[1]][[3]]$y)
+	synbb.outfile <<- paste("trip-",i,sep="")
 	print(paste("Running bb for cellgrid",i,"of",length(cellgrid)))
 	cellgrid[i][[1]][[3]]$Julian <- cellgrid[3][[1]][[3]]$Time * 24 * 60
 	bb(cellgrid[i][[1]][[3]])

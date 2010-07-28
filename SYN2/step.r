@@ -60,7 +60,7 @@ step <- function() {
 	#write each ma to file
 	for(row in cellgrid) {
 		if(!is.na(row[[2]])) {
-			write.table(row[[2]], file=paste(workdir,"/",row[[1]]$xmin,"-",row[[1]]$xmax,"-",row[[1]]$ymin,"-",row[[1]]$ymax,"_ma.txt",sep=""), append=TRUE, quote=FALSE, row.names=FALSE, sep="\t")
+			write.table(row[[2]], file=paste(workdir,"/",synbb.outfile,"-ma-",row[[1]]$xmin,"-",row[[1]]$xmax,"-",row[[1]]$ymin,"-",row[[1]]$ymax,"_ma.txt",sep=""), append=TRUE, quote=FALSE, row.names=FALSE, sep="\t")
 		}
 	}
 

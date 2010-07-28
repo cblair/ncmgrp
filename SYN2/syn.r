@@ -12,7 +12,7 @@ syn <- function(al, ma) {
 	#locationsfile = paste(cluster, "_all_locations.txt", sep="") 
  
 	#origfilename = strsplit(locationsfile,"\\.")[[1]][1]
-	origfilename = paste(cluster,"-",min(al$x),"-",max(al$x),"-",min(al$y),"-",max(al$y), sep="")
+	origfilename = paste(synbb.outfile,"-",min(al$x),"-",max(al$x),"-",min(al$y),"-",max(al$y), sep="")
 	#Track = as.matrix(read.table(file= locationsfile,head=T,sep=''))
 	Track = as.matrix(al)
 	#separate text refering to availability file from track data
@@ -75,7 +75,7 @@ syn <- function(al, ma) {
 	rownames(CoVarMinMax)=c("min", "max")
 	
 	#Write output file of minimum and maximum values for each input variable
-	outputfile = paste(origfilename,"_CoVar_MinMax.txt", sep = "")
+	outputfile = paste(synbb.outfile,"-",origfilename,"_CoVar_MinMax.txt", sep = "")
 	data.frame(CoVarMinMax)
 	write.table (CoVarMinMax, file = outputfile)
 	
@@ -164,12 +164,12 @@ syn <- function(al, ma) {
 		#Write output probability file to working directory
 		for (i in 1:length(CurrentAList)){
 			extentfile = names(AvailFileNames[i])
-			outputfile = paste("Prob_", origfilename,"_BVN_Model",k,"_", extentfile,sep = 	"")
+			outputfile = paste(synbb.outfile,"-Prob_", origfilename,"_BVN_Model",k,"_", extentfile,sep = 	"")
 			write.table (UnTransSBVN.fit[[7]][[i]], file = outputfile, col.names = TRUE, 	row.names = F, sep = ",")
 		}
 
 		#Write output table to working directory
-		outputfile = paste("BVN_Model",k,"_Out.txt",sep = "")
+		outputfile = paste(synbb.outfile,"-BVN_Model",k,"_Out.txt",sep = "")
 		tmp.wid = getOption("width")  # save current width
 		options(width=10000)
 		sink(outputfile)              # redirect output to file
@@ -249,7 +249,7 @@ PrevExpParamEsts[rownames(SEP.fit$parTable)]=SEP.fit$parTable[rownames(SEP.fit$p
 #Write output probability file to working directory
 for (i in 1:length(CurrentAList)){
 	extentfile = names(AvailFileNames[i])
-	outputfile = paste("Prob_", origfilename,"_ExpPower_Model",k,"_", extentfile,sep = 	"")
+	outputfile = paste(synbb.outfile,"-Prob_", origfilename,"_ExpPower_Model",k,"_", extentfile,sep = 	"")
 	write.table (UnTransSEP.fit[[7]][[i]], file = outputfile, col.names = TRUE, 	row.names = F, sep = ",")
 }
 

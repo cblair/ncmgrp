@@ -179,7 +179,7 @@ m <- SpatialPixelsDataFrame(points = m[c("x", "y")], data=m)
 
 m <- as(m, "SpatialGridDataFrame")
 
-writeAsciiGrid(m, paste(cluster,"-",min(locs$x),"-",max(locs$x),"-",min(locs$y),"-",max(locs$y),"_example_grid.asc", sep=""), attr=3)
+writeAsciiGrid(m, paste(synbb.outfile,"_example_grid.asc", sep=""), attr=3)
 
 #move rplots file to respective 
 #system(paste("mv Rplots.pdf ",cluster,"-",min(locs$x),"-",max(locs$x),"-",min(locs$y),"-",max(locs$y),"_rplots.pdf", sep=""))

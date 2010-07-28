@@ -19,7 +19,7 @@ if [ -e /usr/local/sbin/pbs_mom ]; then
 fi
 
 . /usr/modules/init/bash
-module load R
+module load R/2.10.1
 
 echo R < synbb.r --no-save -c $CLUSTER --do-to-js $MODE
 R < synbb.r --no-save -c $CLUSTER --do-to-js $MODE
