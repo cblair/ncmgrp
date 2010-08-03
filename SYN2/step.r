@@ -6,6 +6,10 @@ step <- function() {
 		if(i %% 2 == 0) {
 			xsection <- c(al$x[i-1], al$x[i], al$x[i+1])
 			ysection <- c(al$y[i-1], al$y[i], al$y[i+1])
+			#if one of the trips does not exist, return
+			if(is.na(al[i+1,]) || is.na(al[i+1,]) || is.na(al[i+1,])) {
+				return(NA)
+			}
 			xmin <- min(xsection)
 			xmax <- max(xsection)
 			ymin <- min(ysection)
@@ -52,17 +56,16 @@ step <- function() {
 		#print("cell grip proc time:")
 		#print(runtime)
 		z <<- z + 1
-		print("loc done")
-		print(z)
+		print(paste("loc",z,"done"))
  	}
 	)
 
 	#write each ma to file
-	for(row in cellgrid) {
-		if(!is.na(row[[2]])) {
-			write.table(row[[2]], file=paste(workdir,"/",synbb.outfile,"-ma-",row[[1]]$xmin,"-",row[[1]]$xmax,"-",row[[1]]$ymin,"-",row[[1]]$ymax,"_ma.txt",sep=""), append=TRUE, quote=FALSE, row.names=FALSE, sep="\t")
-		}
-	}
+	#for(row in cellgrid) {
+	#	if(!is.na(row[[2]])) {
+	#		write.table(row[[2]], file=paste(workdir,"/",synbb.outfile,"-ma-",row[[1]]$xmin,"-",row[[1]]$xmax,"-",row[[1]]$ymin,"-",row[[1]]$ymax,"_ma.txt",sep=""), append=TRUE, quote=FALSE, row.names=FALSE, sep="\t")
+	#	}
+	#}
 
 return(cellgrid)
 }#end step function

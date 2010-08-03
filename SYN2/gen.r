@@ -18,7 +18,6 @@ stime = Sys.time()
 #If problems during optimization occur, try a different optimization method
 
 #mle.sep = optim(start.val, sepLogLik, method = "Nelder-Mead",hessian = TRUE, track =track,AvailList=AvailList,control=list(maxit=500, reltol = .00001))
-
 mle.sep = optim(start.val, sepLogLik, method = "L-BFGS-B",upper = ubounds, lower = lbounds, hessian = TRUE, track =track,AvailList=AvailList,control=list(maxit=100))
 
 etime = Sys.time()
@@ -105,6 +104,11 @@ Map.g.a = MapShapeFunc*Normalize
   } 
  }
 MapNonNorm.g.u = Map.g.a*wMap
+#print("TS nsyn: Map.g.a")
+#print(Map.g.a)
+#print("TS nsyn: wMap")
+#print(wMap)
+
 MapVolume = sum(MapNonNorm.g.u*cellsize)
 
 #Calculate probability of use grid and cummulative probability grid
@@ -120,8 +124,8 @@ UseDistList[k] = list(habmat)
 
 endtime <- proc.time()[3]
 runtime <- endtime - starttime
-print("seple Calculate probability of use distribution loop time:")
-print(runtime)
+#print("seple Calculate probability of use distribution loop time:")
+#print(runtime)
 } #end AvailList loop
 
 
@@ -270,8 +274,10 @@ stime = Sys.time()
 #If problems during optimization occur, try a different optimization method
 
 #mle.sep = optim(start.val, sepLogLik, method = "Nelder-Mead",hessian = TRUE, track =track,AvailList=AvailList,control=list(maxit=500, reltol = .00001))
-
 mle.sbvn = optim(start.val, sbvnLogLik, method = "L-BFGS-B", lower = lbounds, upper=ubounds,hessian = TRUE, track = track,AvailList=AvailList,control=list(maxit=100))
+#mle.sbvn = optim(start.val, sbvnLogLik, method = "BFGS", lower = lbounds, upper=ubounds,hessian = TRUE, track = track,AvailList=AvailList,control=list(maxit=100))
+#mle.sep = optim(start.val, sepLogLik, method = "SANN",hessian = TRUE, track =track,AvailList=AvailList,control=list(maxit=26, reltol = .00001))
+
 etime = Sys.time()
 
 Hessian = T
@@ -352,9 +358,9 @@ UseDistList[k] = list(habmat)
 
 endtime <- proc.time()[3]
 runtime <- endtime - starttime
-print("seple Calculate probability of use distribution loop time:")
-print(runtime)
-} #edn AvailList loop
+#print("seple Calculate probability of use distribution loop time:")
+#print(runtime)
+} #end AvailList loop
 K = length(start.val)
 AIC = mle.sbvn$value + 2*K
 AICc = AIC+(2*K*(K+1)/(length(track)-K-1))

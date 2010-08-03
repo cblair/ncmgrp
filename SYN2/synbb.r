@@ -61,7 +61,7 @@ ma = read.table(masterfname, sep='\t',header=TRUE, as.is=TRUE)
 #################################################
 #Process
 if(do.to.js == TRUE) {
-	al$Julian <- al$Time * 24 * 60 * 60
+	al$Julian <- al$time * 24 * 60 * 60
 	al = al[order(al$Julian),]
 }
 if(bb.only == TRUE) {
@@ -71,6 +71,7 @@ if(bb.only == TRUE) {
 	q()
 }
 if(syn.only == TRUE) {
+	synbb.outfile <- cluster
 	print("Need to test with original data.")
 	syn(al,ma)
 	q()
@@ -79,16 +80,21 @@ if(syn.only == TRUE) {
 #else, we are doing bb and syn by triplicates
 synbb.outfile = "step"
 cellgrid = step()
+
 lapply(1:length(cellgrid), function(i) {
-	#synbb.outfile = paste(cluster,"-",min(cellgrid[i][[1]][[3]]$x),"-",max(cellgrid[i][[1]][[3]]$x),"-",min(cellgrid[i][[1]][[3]]$y),"-",max(cellgrid[i][[1]][[3]]$y)
-	synbb.outfile <<- paste("trip-",i,sep="")
-	print(paste("Running bb for cellgrid",i,"of",length(cellgrid)))
-	cellgrid[i][[1]][[3]]$Julian <- cellgrid[3][[1]][[3]]$Time * 24 * 60
-	bb(cellgrid[i][[1]][[3]])
-	print(paste("Running syn for cellgrid",i,"of",length(cellgrid)))
-	syn(cellgrid[i][[1]][[3]],cellgrid[i][[1]][[2]])
+	if(!is.na(cellgrid[i][[1]][[2]])) {
+		synbb.outfile <<- paste("trip-",i,sep="")
+		#print(paste("Running bb for cellgrid",i,"of",length(cellgrid)))
+		#cellgrid[i][[1]][[3]]$Julian <- cellgrid[3][[1]][[3]]$Time * 24 * 60
+		#bb(cellgrid[i][[1]][[3]])
+	}
+	else {
+		
+	}
  }
 )
+
+#syn(al, ma)
 
 if(parallel == TRUE) {
 	stopCluster(c1)

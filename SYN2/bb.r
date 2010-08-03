@@ -165,13 +165,12 @@ BrownianBridge <- function(X, Y, Time, LocationError, cell.size=50){
 }
 
 # Create output ASCII file with probabilities (scaled so max=1000)
-system.time(density <- BrownianBridge(locs$x, locs$y, Time=locs$Julian, 
-            LocationError=20, cell.size=30)
-	    )
+density <- BrownianBridge(locs$x, locs$y, Time=locs$Julian,LocationError=20, cell.size=30)
 bb = density
 if(length(bb) == 0) {return()}
 
-bb$probability <- round(bb$probability*1000/max(bb$probability), 0)
+#bb$probability <- round(bb$probability*1000/max(bb$probability), 0)
+bb$probability <- bb$probability*1/max(bb$probability)
 
 m <- data.frame(bb)
 
@@ -180,7 +179,6 @@ m <- SpatialPixelsDataFrame(points = m[c("x", "y")], data=m)
 m <- as(m, "SpatialGridDataFrame")
 
 writeAsciiGrid(m, paste(synbb.outfile,"_example_grid.asc", sep=""), attr=3)
-
 #move rplots file to respective 
 #system(paste("mv Rplots.pdf ",cluster,"-",min(locs$x),"-",max(locs$x),"-",min(locs$y),"-",max(locs$y),"_rplots.pdf", sep=""))
 

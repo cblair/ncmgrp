@@ -12,7 +12,8 @@ syn <- function(al, ma) {
 	#locationsfile = paste(cluster, "_all_locations.txt", sep="") 
  
 	#origfilename = strsplit(locationsfile,"\\.")[[1]][1]
-	origfilename = paste(synbb.outfile,"-",min(al$x),"-",max(al$x),"-",min(al$y),"-",max(al$y), sep="")
+	#origfilename = paste(synbb.outfile,"-",min(al$x),"-",max(al$x),"-",min(al$y),"-",max(al$y), sep="")
+	origfilename = paste(synbb.outfile,"-",sep="")
 	#Track = as.matrix(read.table(file= locationsfile,head=T,sep=''))
 	Track = as.matrix(al)
 	#separate text refering to availability file from track data
@@ -40,26 +41,27 @@ syn <- function(al, ma) {
 		#filter unwanted columns
 		altemp <- al
 		altemp$ExtentFile <- NULL
-		altemp$Time <- NULL
+		altemp$time <- NULL
 		altemp$Julian <- NULL
 		habmat = as.matrix(altemp)
 		habmat = apply(habmat[,1:(ncol(habmat))],2,as.numeric)
 		AvailList[i] = list(habmat)
 	}
 	names(AvailList)=names(AvailFileNames)
-	#====================================================================================
+	#====================================================================================	
 	#Standardize Covariates to range 0 to 1; this helps with likelihood calculations
 	mins = matrix(NA,length(AvailList),ncol(AvailList[[1]]))
 	maxs=mins
-
 	#Enter absolute minimum and maximum values for each covariate from all of the input availability grids
-	#The first 2 columns are for x and y coordinates and mins and maxs can be set to 0, these values will be ingored
 	#colmin = c(0,0,0,0,681)
 	#colmax = c(0,0,420,63,18.25)
+#The first 2 columns are for x and y coordinates and mins and maxs can be set to 0, these values will be ingored
 	#Auto calculating min max added 07/01/10
+
 	minmaxfilename = paste(workdir,"/",cluster,"_master_avail.txt",sep="")
 	minmaxfilename
 	minmax = read.table(minmaxfilename, sep='\t',header=TRUE, as.is=TRUE) 
+	#minmax <- ma
 	colmin <- c()
 	colmax <- c()
 	for(i in 1:ncol(minmax)) {
@@ -78,7 +80,9 @@ syn <- function(al, ma) {
 	outputfile = paste(synbb.outfile,"-",origfilename,"_CoVar_MinMax.txt", sep = "")
 	data.frame(CoVarMinMax)
 	write.table (CoVarMinMax, file = outputfile)
-	
+		
+	colmin = c(0,0,0,0,300)
+	colmax = c(0,0,4000,89,3000)
 	#Standardize Covariates in Availability grids
 	for (i in 1:length(AvailList)){
 		for (col in 3:ncol(AvailList[[1]])){
@@ -160,7 +164,7 @@ syn <- function(al, ma) {
 		UnTransSBVN.fit$parTable[3:4,1:4]=exp(SBVN.fit$parTable[3:4,1:4])
 		rownames(UnTransSBVN.fit$parTable)[3]="sdx"
 		rownames(UnTransSBVN.fit$parTable)[4]="sxy"
-
+#print(ma)
 		#Write output probability file to working directory
 		for (i in 1:length(CurrentAList)){
 			extentfile = names(AvailFileNames[i])
