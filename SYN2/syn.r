@@ -17,7 +17,8 @@ syn <- function(al, ma) {
 	#Track = as.matrix(read.table(file= locationsfile,head=T,sep=''))
 	Track = as.matrix(al)
 	#separate text refering to availability file from track data
-	locAvailFile <<- Track[,ncol(Track) - 1]
+	#locAvailFile <<- Track[,ncol(Track) - 1]
+	locAvailFile <<- al$ExtentFile
 	Track = apply(Track[,1:(ncol(Track)-1)],2,as.numeric)
 	#(4) specify which variables will be used: use '1' to specify a variable that will be
 	# used and '0' for variables that will not be used

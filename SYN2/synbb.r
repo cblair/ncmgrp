@@ -66,13 +66,13 @@ if(do.to.js == TRUE) {
 }
 if(bb.only == TRUE) {
 	synbb.outfile <- cluster
-	print("Need to test with original bb data.")
+	print("Processing bb without cellgrids...")
 	bb(al)
 	q()
 }
 if(syn.only == TRUE) {
 	synbb.outfile <- cluster
-	print("Need to test with original data.")
+	print("Processing syn without cellgrids...")
 	syn(al,ma)
 	q()
 }
@@ -84,9 +84,9 @@ cellgrid = step()
 lapply(1:length(cellgrid), function(i) {
 	if(!is.na(cellgrid[i][[1]][[2]])) {
 		synbb.outfile <<- paste("trip-",i,sep="")
-		#print(paste("Running bb for cellgrid",i,"of",length(cellgrid)))
-		#cellgrid[i][[1]][[3]]$Julian <- cellgrid[3][[1]][[3]]$Time * 24 * 60
-		#bb(cellgrid[i][[1]][[3]])
+		print(paste("Running bb for cellgrid",i,"of",length(cellgrid)))
+		cellgrid[i][[1]][[3]]$Julian <- cellgrid[3][[1]][[3]]$time * 24 * 60
+		bb(cellgrid[i][[1]][[3]])
 	}
 	else {
 		
@@ -94,7 +94,9 @@ lapply(1:length(cellgrid), function(i) {
  }
 )
 
-#syn(al, ma)
+print("Processing syn using cellgrids...")
+synbb.outfile = "syn"
+syn(al, ma)
 
 if(parallel == TRUE) {
 	stopCluster(c1)

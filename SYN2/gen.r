@@ -405,9 +405,18 @@ Map.g.a = Map.g.a.1*exp(Map.g.a.2*Map.g.a.3)
 SumLogLik = 0
 LogLoc.g.u=array(0,nrow(track))
 
-for (i in 1:nrow(track)){
+extlen <- 0
+if(syn.only) {
+	extlen <- nrow(track)
+}
+else {
+	extlen <- length(cellgrid)
+}
+#for (i in 1:nrow(track)){
+for (i in 1:extlen) {
   #get appropriate availability map
-  availname = locAvailFile[i]
+  if(syn.only) {availname = locAvailFile[i]}
+  else {availname = cellgrid[i][[1]][[3]]$ExtentFile[2]}
   habmat = AvailList[[availname]]
 # Selection Function in original paper  ***do not use--not tested***
 #  W = 1
