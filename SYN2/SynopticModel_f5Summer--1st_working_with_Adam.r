@@ -5,15 +5,16 @@
 #(1) set working directory with input files
 #workdir = choose.dir(caption="Select folder with input files")
 basedir = getwd()
-workdir = paste(getwd(),"/data/003SCF",sep="")
+workdir = paste(getwd(),"/data/003SCFtt",sep="")
 setwd(workdir)
 
 #(2) choose file containing functions: GeneralFramework_SynopticModels.R
+#source(file = paste(basedir,"/gen.r",sep=""))
 source(file = paste(basedir,"/gen.r",sep=""))
 
 #(3) choose locations file:
 #locationsfile = "f5_summer_buffer_locs.txt"
-locationsfile = "003SCF_all_locations.txt" 
+locationsfile = "003SCFtt_all_locations.txt" 
  
 origfilename = strsplit(locationsfile,"\\.")[[1]][1]
 Track = as.matrix(read.table(file= locationsfile,head=T,sep=''))

@@ -40,11 +40,10 @@ syn <- function(al, ma) {
 		#filename = paste(workdir,"/",names(AvailFileNames)[i],sep="")
 		#habmat = as.matrix(read.table(file=filename,head=T,sep=''))
 		#filter unwanted columns
-		altemp <- al
-		altemp$ExtentFile <- NULL
-		altemp$time <- NULL
-		altemp$Julian <- NULL
-		habmat = as.matrix(altemp)
+		#altemp$ExtentFile <- NULL
+		#altemp$time <- NULL
+		#altemp$Julian <- NULL
+		habmat = as.matrix(ma)
 		habmat = apply(habmat[,1:(ncol(habmat))],2,as.numeric)
 		AvailList[i] = list(habmat)
 	}
@@ -144,7 +143,7 @@ syn <- function(al, ma) {
 			for (i in 1:length(PrevBVNParamEsts)){
 				for (j in 1:length(ThetaW)){
 					if(names(PrevBVNParamEsts)[i]==names(ThetaW)[j]){
-						ThetaW[j]=PrevBVNParamEsts[i]
+					ThetaW[j]=PrevBVNParamEsts[i]
 	   				} #end if 
   				} #end ThetaW loop
  			} #end PrevBVNParamEsts loop
