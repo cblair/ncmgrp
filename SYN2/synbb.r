@@ -99,6 +99,8 @@ synbb.outfile = "step"
 
 cellgrid = step()
 
+cellgrid[1]
+q()
 foreach.cellgrid <- function(i) {
 	if(!is.na(cellgrid[i][[1]][[2]])) {
 		synbb.outfile <<- paste("trip-",i,sep="")
