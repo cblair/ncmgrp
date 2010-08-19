@@ -1,8 +1,4 @@
-step <- function() {
-	#################################################3
-	#Start for processing
-
-	cellgrid <- lapply(1:length(al$x), function(i) {
+get.cellgrid <- function(i) {
 		if(i %% 2 == 0) {
 			xsection <- c(al$x[i-1], al$x[i], al$x[i+1])
 			ysection <- c(al$y[i-1], al$y[i], al$y[i+1])
@@ -18,12 +14,13 @@ step <- function() {
 			newxmax <- xmax + (xmax - xmin)
 			newymin <- ymin - (ymax - ymin)
 			newymax <- ymax + (ymax - ymin)
-			#return(c(data.frame(xmin=newxmin, xmax=newxmax, ymin=newymin, ymax=newymax), 0, as.data.frame(rbind(al[i - 1,], al[i,], al[i + 1,]))))
 			return(list(data.frame(xmin=newxmin, xmax=newxmax, ymin=newymin, ymax=newymax), 0, as.data.frame(rbind(al[i - 1,], al[i,], al[i + 1,]))))
 		}
 		return(NA)
 	 }#end function
-	)#end lapply
+
+step <- function() {
+
 	#clean out NA values
 	cellgrid <- cellgrid[!is.na(cellgrid)]
 	#reset the appropriate cellgrid vector element to an ma variable

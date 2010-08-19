@@ -11,7 +11,7 @@
 #$ -cwd
 #$ -V    	
 #$ -m bea
-#$ -M well0358@vandals.uidaho.edu,cblair@vandals.uidaho.edu
+# -M well0358@vandals.uidaho.edu,cblair@vandals.uidaho.edu
 #$ -p -1
 
 if [ -e /usr/local/sbin/pbs_mom ]; then
@@ -21,6 +21,5 @@ fi
 . /usr/modules/init/bash
 module load R/2.10.1
 
-#echo R < synbb.r --no-save -c $CLUSTER --do-to-js $MODE
-#R < synbb.r --no-save -c $CLUSTER --do-to-js $MODE
-R < synbb.r --no-save -c 003SCF-2 --do-to-js --syn-only
+echo R < synbb.r --no-save --do-to-js $MODE -c $CLUSTER
+R < synbb.r --no-save --do-to-js $MODE -c $CLUSTER

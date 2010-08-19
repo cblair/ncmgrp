@@ -7,10 +7,12 @@ if [ $# -lt 1 ] || [ $# -gt 2 ]; then
 	exit 1
 fi
 if [ $# -eq 2 ]; then
-	MODE="-p $2"
+	PMODE="-v MODE=-p $2"
 	NODES="-pe orte $2"
 fi
 
 JOBDATA=jobdata
 
-qsub -N step-$1 -o $JOBDATA/step-$1.o -e $JOBDATA/step-$1.e -v CLUSTER=$1 -v MODE="$MODE" $NODES sub.pbs-sge
+QSUB="qsub -N step-$1 -o $JOBDATA/step-$1.o -e $JOBDATA/step-$1.e $PMODE -v CLUSTER=$1 $NODES sub.pbs-sge"
+echo $QSUB
+echo `$QSUB`

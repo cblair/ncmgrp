@@ -1,10 +1,8 @@
-source("step.r")
 source("bb.r")
 source("syn.r")
 require(survival)
 require(maptools)
 require(sp)
-require(Rmpi)
 
 ################################################
 #Handle Options
@@ -40,15 +38,23 @@ for(option in options) {
 ###############################################
 #Parallel Setup
 if(parallel == TRUE) {
+	require(Rmpi)
 	require(snow)
 	c1 <- makeCluster(nodes, type="MPI")
 }
+source("step.r")
 
 #################################################
 #Set working directories
 workdir = paste(getwd(),"/data/",cluster,sep="")
 basedir = getwd()
+print(paste("Using",workdir,"as workdir"))
 setwd(workdir)
+
+#################################################
+#Profiling for performance
+profile.fname = paste(workdir,"/profile.dat", sep="")
+Rprof(profile.fname)
 
 #################################################
 #Setup for processing
@@ -79,25 +85,49 @@ if(syn.only == TRUE) {
 
 #else, we are doing bb and syn by triplicates
 synbb.outfile = "step"
+
+        #################################################3
+        #Start for processing
+        if(parallel) {
+                clusterExport(c1, "al")
+                cellgrid <- parLapply(c1, 1:length(al$x), get.cellgrid)
+                #cellgrid <- lapply(1:length(al$x), get.cellgrid)
+
+        } else {
+                cellgrid <- lapply(1:length(al$x), get.cellgrid)
+        }
+
 cellgrid = step()
 
-lapply(1:length(cellgrid), function(i) {
+foreach.cellgrid <- function(i) {
 	if(!is.na(cellgrid[i][[1]][[2]])) {
 		synbb.outfile <<- paste("trip-",i,sep="")
 		print(paste("Running bb for cellgrid",i,"of",length(cellgrid)))
 		cellgrid[i][[1]][[3]]$Julian <- cellgrid[3][[1]][[3]]$time * 24 * 60
 		bb(cellgrid[i][[1]][[3]])
 	}
-	else {
+	#else {
 		
-	}
- }
-)
+	#}
+}
+
+#if(parallel) {	
+#	clusterExport(c1, "cellgrid")
+#	clusterExport(c1, "bb")
+#	parLapply(c1, 1:length(cellgrid), foreach.cellgrid)
+#} else {
+	lapply(1:length(cellgrid), foreach.cellgrid)
+#}
+
 
 print("Processing syn using cellgrids...")
 synbb.outfile = "syn"
 syn(al, ma)
 
+#close parallel ops
 if(parallel == TRUE) {
 	stopCluster(c1)
 }
+
+#stop and summarize profiling
+summaryRprof(profile.fname)
