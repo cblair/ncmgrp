@@ -471,3 +471,22 @@ SumLogLik = SumLogLik+LogLoc.g.u[i]
 } #end loop through locations
 -2*SumLogLik
 }
+
+get.bb.var <- function() {
+	I = 1
+
+	NumOfSamplePts <- length(ma$x)
+	count <- (NumOfSamplePts - 1) / 2
+	while(I > NumOfSamplePts - 2) {
+		TimeI = SortedBBArray(I, 2) - SortedBBArray(I - 1, 2)
+		TotalTimeI = SortedBBArray(I + 1, 2) - SortedBBArray(I - 1, 2)
+		BBMeanXi = (TimeI / TotalTimeI) * (SortedBBArray(I + 1, 0) - SortedBBArray(I - 1, 0)) + SortedBBArray(I - 1, 0)
+		BBMeanYi = (TimeI / TotalTimeI) * (SortedBBArray(I + 1, 1) - SortedBBArray(I - 1, 1)) + SortedBBArray(I - 1, 1)
+		DistanceSqByN = ((SortedBBArray(I, 0) - BBMeanXi) ^ 2 + (SortedBBArray(I, 1) - BBMeanYi) ^ 2) / (2 * (count - 1))
+		BBDistanceSqByN = DistanceSqByN * (TotalTimeI / (TimeI * (TotalTimeI - TimeI)))
+		SumDistanceSqByN = SumDistanceSqByN + BBDistanceSqByN
+		I <- I + 2
+	}
+	BBVariance = SumDistanceSqByN
+	return(BBVariance)
+}

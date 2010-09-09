@@ -57,12 +57,17 @@ profile.fname = paste(workdir,"/profile.dat", sep="")
 Rprof(profile.fname)
 
 #################################################
-#Setup for processing
+#Setup data
 alfname = paste(workdir,"/",cluster,"_all_locations.txt",sep="")
 #al = all locations
 al = read.table(alfname, sep='\t',header=TRUE, as.is=TRUE)
 masterfname = paste(workdir,"/",cluster,"_master_avail.txt",sep="")
 ma = read.table(masterfname, sep='\t',header=TRUE, as.is=TRUE)
+#normalize
+for(i in 3:ncol(ma)) { #start at 3, ignore x and y cols
+                ma[,i] <- ma[,i] / max(ma[,i])
+        }
+#end normalize
 
 #################################################
 #Process
@@ -99,8 +104,6 @@ synbb.outfile = "step"
 
 cellgrid = step()
 
-cellgrid[1]
-q()
 foreach.cellgrid <- function(i) {
 	if(!is.na(cellgrid[i][[1]][[2]])) {
 		synbb.outfile <<- paste("trip-",i,sep="")

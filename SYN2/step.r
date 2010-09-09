@@ -17,7 +17,31 @@ get.cellgrid <- function(i) {
 			return(list(data.frame(xmin=newxmin, xmax=newxmax, ymin=newymin, ymax=newymax), 0, as.data.frame(rbind(al[i - 1,], al[i,], al[i + 1,]))))
 		}
 		return(NA)
+}#end function
+
+#experiment for Jon
+get.cellgrid.with.mas <- function(i) {
+		if(i %% 2 == 0) {
+			xsection <- c(al$x[i-1], al$x[i], al$x[i+1])
+			ysection <- c(al$y[i-1], al$y[i], al$y[i+1])
+			#if one of the trips does not exist, return
+			if(is.na(al[i+1,]) || is.na(al[i+1,]) || is.na(al[i+1,])) {
+				return(NA)
+			}
+			xmin <- min(xsection)
+			xmax <- max(xsection)
+			ymin <- min(ysection)
+			ymax <- max(ysection)
+			newxmin <- xmin - (xmax - xmin)
+			newxmax <- xmax + (xmax - xmin)
+			newymin <- ymin - (ymax - ymin)
+			newymax <- ymax + (ymax - ymin)
+			return(list(data.frame(xmin=newxmin, xmax=newxmax, ymin=newymin, ymax=newymax), 0, as.data.frame(rbind(al[i - 1,], al[i,], al[i + 1,]))))
+		}
+		return(NA)
 	 }#end function
+
+
 
 step <- function() {
 

@@ -23,14 +23,8 @@ syn <- function(al, ma) {
 	#(4) specify which variables will be used: use '1' to specify a variable that will be
 	# used and '0' for variables that will not be used
 
-	ModelsList = list()
-	ModelsList[1] = list(rep(0, ncol(Track)-3))  # No covariates==> null model of space use
-
-	#Modify these to do different models...  '1' means use the covariate '0' leave out
-	ModelsList[2] = list(c(1, 1, 0))
-	ModelsList[3] = list(c(1, 1, 1))
-	ModelsList[4] = list(c(0,1,1))
-	ModelsList[5] = list(c(1,0,1))
+	modfname = paste(workdir,"/models.r",sep="")
+	source(modfname)
 
 	#============================================================================
 	#For temporally changing habitat values, create a list of availability grids
@@ -53,13 +47,10 @@ syn <- function(al, ma) {
 	mins = matrix(NA,length(AvailList),ncol(AvailList[[1]]))
 	maxs=mins
 	#Enter absolute minimum and maximum values for each covariate from all of the input availability grids
-	#colmin = c(0,0,0,0,681)
-	#colmax = c(0,0,420,63,18.25)
-#The first 2 columns are for x and y coordinates and mins and maxs can be set to 0, these values will be ingored
+	#The first 2 columns are for x and y coordinates and mins and maxs can be set to 0, these values will 
+	#be ingored
 	#Auto calculating min max added 07/01/10
-
 	minmaxfilename = paste(workdir,"/",cluster,"_master_avail.txt",sep="")
-	minmaxfilename
 	minmax = read.table(minmaxfilename, sep='\t',header=TRUE, as.is=TRUE) 
 	#minmax <- ma
 	colmin <- c()
