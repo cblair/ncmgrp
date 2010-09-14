@@ -1,4 +1,4 @@
-bb <- function(locs) {
+bb <- function(locs, bb.var) {
 # Convert time to Julian 
 #locs$Date =  as.Date(locs$Date, "%m/%d/%Y")
 #tmp = unlist(strsplit(locs$Hour, ":"))
@@ -77,10 +77,12 @@ BrownianBridge <- function(X, Y, Time, LocationError, cell.size=50){
             ((1-alpha)^2)*(loc.error.1^2) + 
     		(alpha^2)*(loc.error.2^2)
     	#!!this is where ztz Null will kill the prog
-    	l = (1/(2*pi*v))*exp(-ztz / (2*v))
-    	-sum(log(l), na.rm=T)
+    	l = (1/(2*pi*v))*exp(-ztz / (2*v)) 
+		-sum(log(l), na.rm=T)
     }
+
     BMvar = nlminb(start=10000, likelihood, lower=10)$par
+    #BMvar = nlminb(start=bb.var, likelihood, lower=10)$par
     #cat("Brownian Motion Variance (meters^2) =", round(BMvar), 
     #    fill=TRUE)
     BMvar = rep(BMvar, length(X))

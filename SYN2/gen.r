@@ -473,20 +473,34 @@ SumLogLik = SumLogLik+LogLoc.g.u[i]
 }
 
 get.bb.var <- function() {
-	I = 1
+		#SortedBBArray(x, 0) = x val
+		#SortedBBArray(x, 1) = y val	
+		#SortedBBArray(0, x) = first trip 
+		#SortedBBArray(1, x) = second trip, etc
+		#SortedBBArray(x, 2) = time	
 
-	NumOfSamplePts <- length(ma$x)
-	count <- (NumOfSamplePts - 1) / 2
-	while(I > NumOfSamplePts - 2) {
-		TimeI = SortedBBArray(I, 2) - SortedBBArray(I - 1, 2)
-		TotalTimeI = SortedBBArray(I + 1, 2) - SortedBBArray(I - 1, 2)
-		BBMeanXi = (TimeI / TotalTimeI) * (SortedBBArray(I + 1, 0) - SortedBBArray(I - 1, 0)) + SortedBBArray(I - 1, 0)
-		BBMeanYi = (TimeI / TotalTimeI) * (SortedBBArray(I + 1, 1) - SortedBBArray(I - 1, 1)) + SortedBBArray(I - 1, 1)
-		DistanceSqByN = ((SortedBBArray(I, 0) - BBMeanXi) ^ 2 + (SortedBBArray(I, 1) - BBMeanYi) ^ 2) / (2 * (count - 1))
+	SumDistanceSqByN <- 0
+	count <- length(cellgrid)
+	lapply(1:length(cellgrid), function (i) { #foreach trip
+		#TimeI = SortedBBArray(I, 2) - SortedBBArray(I - 1, 2) #time diff between 1 and 2 of trip
+		TimeI <- cellgrid[i][[1]][[3]]$time[2] - cellgrid[i][[1]][[3]]$time[1]
+
+		#TotalTimeI = SortedBBArray(I + 1, 2) - SortedBBArray(I - 1, 2) #time diff between 1 and 3
+		TotalTimeI <-  cellgrid[i][[1]][[3]]$time[3] +  cellgrid[i][[1]][[3]]$time[1]
+
+		#BBMeanXi = (TimeI / TotalTimeI) * (SortedBBArray(I + 1, 0) - SortedBBArray(I - 1, 0)) + SortedBBArray(I - 1, 0) #(time) * mean + 1st 
+		BBMeanXi <- (TimeI / TotalTimeI) * ((cellgrid[i][[1]][[3]]$x[3] - cellgrid[i][[1]][[3]]$x[1]) + cellgrid[i][[1]][[3]]$x[1])
+
+		#BBMeanYi = (TimeI / TotalTimeI) * ((SortedBBArray(I + 1, 1) - SortedBBArray(I - 1, 1)) + SortedBBArray(I - 1, 1) #""
+		BBMeanYi <- (TimeI / TotalTimeI) * ((cellgrid[i][[1]][[3]]$y[3] - cellgrid[i][[1]][[3]]$y[1]) + cellgrid[i][[1]][[3]]$y[1])
+		
+		#DistanceSqByN = ((SortedBBArray(I, 0) - BBMeanXi) ^ 2 + (SortedBBArray(I, 1) - BBMeanYi) ^ 2) / (count - 1) 
+		DistanceSqByN <- ((cellgrid[i][[1]][[3]]$x[2] - BBMeanXi) * (cellgrid[i][[1]][[3]]$x[2] - BBMeanXi) + ((cellgrid[i][[1]][[3]]$y[2] - BBMeanYi) * (cellgrid[i][[1]][[3]]$y[2] - BBMeanYi))) / (count - 1)		
+		
 		BBDistanceSqByN = DistanceSqByN * (TotalTimeI / (TimeI * (TotalTimeI - TimeI)))
-		SumDistanceSqByN = SumDistanceSqByN + BBDistanceSqByN
-		I <- I + 2
-	}
+		SumDistanceSqByN <<- SumDistanceSqByN + BBDistanceSqByN
+	 }
+	)
 	BBVariance = SumDistanceSqByN
 	return(BBVariance)
 }

@@ -1,5 +1,6 @@
 source("bb.r")
 source("syn.r")
+source("gen.r")
 require(survival)
 require(maptools)
 require(sp)
@@ -104,12 +105,16 @@ synbb.outfile = "step"
 
 cellgrid = step()
 
+bb.var <- get.bb.var()
+print(bb.var)
+q()
+
 foreach.cellgrid <- function(i) {
 	if(!is.na(cellgrid[i][[1]][[2]])) {
 		synbb.outfile <<- paste("trip-",i,sep="")
 		print(paste("Running bb for cellgrid",i,"of",length(cellgrid)))
 		cellgrid[i][[1]][[3]]$Julian <- cellgrid[3][[1]][[3]]$time * 24 * 60
-		bb(cellgrid[i][[1]][[3]])
+		bb(cellgrid[i][[1]][[3]], bb.var)
 	}
 	#else {
 		

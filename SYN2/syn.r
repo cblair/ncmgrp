@@ -4,10 +4,6 @@
 locAvailFile <- c()
 
 syn <- function(al, ma) {
-	#(2) choose file containing functions: GeneralFramework_SynopticModels.R
-	genfile = paste(basedir,"/gen.r",sep="")
-	source(file = genfile)
-
 	#(3) choose locations file:
 	#locationsfile = paste(cluster, "_all_locations.txt", sep="") 
  
@@ -92,6 +88,8 @@ syn <- function(al, ma) {
 
 	PrevBVNParamEsts = array(0,(ncol(AvailList[[1]])+3))
 	names(PrevBVNParamEsts) = c("mu.x", "mu.y", "sd.x", "sd.y", "corr.x.y",colnames(AvailList[[1]])[-c(1:2)])
+	#for synbb mode:
+	#names(PrevBVNParamEsts) = c("bb.var",colnames(AvailList[[1]])[-c(1:2)])
 
 
 	for (k in 1:length(ModelsList)){
