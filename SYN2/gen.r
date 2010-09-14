@@ -495,7 +495,7 @@ get.bb.var <- function() {
 		BBMeanYi <- (TimeI / TotalTimeI) * ((cellgrid[i][[1]][[3]]$y[3] - cellgrid[i][[1]][[3]]$y[1]) + cellgrid[i][[1]][[3]]$y[1])
 		
 		#DistanceSqByN = ((SortedBBArray(I, 0) - BBMeanXi) ^ 2 + (SortedBBArray(I, 1) - BBMeanYi) ^ 2) / (count - 1) 
-		DistanceSqByN <- ((cellgrid[i][[1]][[3]]$x[2] - BBMeanXi) * (cellgrid[i][[1]][[3]]$x[2] - BBMeanXi) + ((cellgrid[i][[1]][[3]]$y[2] - BBMeanYi) * (cellgrid[i][[1]][[3]]$y[2] - BBMeanYi))) / (count - 1)		
+		DistanceSqByN <- ((cellgrid[i][[1]][[3]]$x[2] - BBMeanXi) ^ 2 + (cellgrid[i][[1]][[3]]$y[2] - BBMeanYi) ^ 2) / (count - 1)		
 		
 		BBDistanceSqByN = DistanceSqByN * (TotalTimeI / (TimeI * (TotalTimeI - TimeI)))
 		SumDistanceSqByN <<- SumDistanceSqByN + BBDistanceSqByN

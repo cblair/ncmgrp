@@ -81,8 +81,8 @@ BrownianBridge <- function(X, Y, Time, LocationError, cell.size=50){
 		-sum(log(l), na.rm=T)
     }
 
-    BMvar = nlminb(start=10000, likelihood, lower=10)$par
-    #BMvar = nlminb(start=bb.var, likelihood, lower=10)$par
+    #BMvar = nlminb(start=10000, likelihood, lower=10)$par
+    BMvar = nlminb(start=bb.var, likelihood, lower=10)$par
     #cat("Brownian Motion Variance (meters^2) =", round(BMvar), 
     #    fill=TRUE)
     BMvar = rep(BMvar, length(X))
