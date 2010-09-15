@@ -106,6 +106,8 @@ synbb.outfile = "step"
 cellgrid = step()
 
 bb.var <- get.bb.var()
+print(bb.var)
+q()
 
 foreach.cellgrid <- function(i) {
 	if(!is.na(cellgrid[i][[1]][[2]])) {

@@ -489,10 +489,10 @@ get.bb.var <- function() {
 		TotalTimeI <-  cellgrid[i][[1]][[3]]$time[3] +  cellgrid[i][[1]][[3]]$time[1]
 
 		#BBMeanXi = (TimeI / TotalTimeI) * (SortedBBArray(I + 1, 0) - SortedBBArray(I - 1, 0)) + SortedBBArray(I - 1, 0) #(time) * mean + 1st 
-		BBMeanXi <- (TimeI / TotalTimeI) * ((cellgrid[i][[1]][[3]]$x[3] - cellgrid[i][[1]][[3]]$x[1]) + cellgrid[i][[1]][[3]]$x[1])
+		BBMeanXi <- (TimeI / TotalTimeI) * (cellgrid[i][[1]][[3]]$x[3] - cellgrid[i][[1]][[3]]$x[1]) + cellgrid[i][[1]][[3]]$x[1]
 
-		#BBMeanYi = (TimeI / TotalTimeI) * ((SortedBBArray(I + 1, 1) - SortedBBArray(I - 1, 1)) + SortedBBArray(I - 1, 1) #""
-		BBMeanYi <- (TimeI / TotalTimeI) * ((cellgrid[i][[1]][[3]]$y[3] - cellgrid[i][[1]][[3]]$y[1]) + cellgrid[i][[1]][[3]]$y[1])
+		#BBMeanYi = (TimeI / TotalTimeI) * ((SortedBBArray(I + 1, 1) - SortedBBArray(I - 1, 1)) + SortedBBArray(I - 1, 1) #
+		BBMeanYi <- (TimeI / TotalTimeI) * (cellgrid[i][[1]][[3]]$y[3] - cellgrid[i][[1]][[3]]$y[1]) + cellgrid[i][[1]][[3]]$y[1]
 		
 		#DistanceSqByN = ((SortedBBArray(I, 0) - BBMeanXi) ^ 2 + (SortedBBArray(I, 1) - BBMeanYi) ^ 2) / (count - 1) 
 		DistanceSqByN <- ((cellgrid[i][[1]][[3]]$x[2] - BBMeanXi) ^ 2 + (cellgrid[i][[1]][[3]]$y[2] - BBMeanYi) ^ 2) / (count - 1)		
