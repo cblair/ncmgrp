@@ -7,7 +7,7 @@ if [ $# -lt 1 ] || [ $# -gt 2 ]; then
 	exit 1
 fi
 if [ $# -eq 2 ]; then
-	PMODE="-v MODE=-p $2"
+	PMODE="-v MODE=$2"
 	NODES="-pe orte $2"
 fi
 

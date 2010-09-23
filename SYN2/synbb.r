@@ -91,23 +91,31 @@ if(syn.only == TRUE) {
 
 #else, we are doing bb and syn by triplicates
 synbb.outfile = "step"
-
-        #################################################3
-        #Start for processing
-        if(parallel) {
-                clusterExport(c1, "al")
-                cellgrid <- parLapply(c1, 1:length(al$x), get.cellgrid)
-                #cellgrid <- lapply(1:length(al$x), get.cellgrid)
-
-        } else {
-                cellgrid <- lapply(1:length(al$x), get.cellgrid)
-        }
-
-cellgrid = step()
+        
+#################################################3
+#Start for processing
+#build cellgrid
+cellgrid <- list()
+print("Starting cellgrid construction...")
+starttime <- proc.time()[3]
+if(parallel) {	
+	clusterExport(c1, "al")
+	clusterExport(c1, "ma")
+	#cellgrid <- parLapply(c1, 1:length(al$x), get.cellgrid)
+	cellgrid <- parLapply(c1, 1:length(al$x), get.cellgrid.with.mas)
+} else {
+	#cellgrid <- lapply(1:length(al$x), get.cellgrid)
+	cellgrid <- lapply(1:length(al$x), get.cellgrid.with.mas)
+}
+cellgrid <- cellgrid[!is.na(cellgrid)]
+#insert ma's
+#cellgrid = step()
+endtime <- proc.time()[3]
+print(paste("Cellgrid construction time was",endtime - starttime))
+proc.time()
+q()
 
 bb.var <- get.bb.var()
-print(bb.var)
-q()
 
 foreach.cellgrid <- function(i) {
 	if(!is.na(cellgrid[i][[1]][[2]])) {

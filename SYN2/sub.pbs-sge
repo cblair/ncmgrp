@@ -12,6 +12,7 @@
 #$ -V    	
 #$ -m bea
 # -M well0358@vandals.uidaho.edu,cblair@vandals.uidaho.edu
+#$ -M cblair@vandals.uidaho.edu
 #$ -p -1
 
 if [ -e /usr/local/sbin/pbs_mom ]; then
@@ -19,7 +20,10 @@ if [ -e /usr/local/sbin/pbs_mom ]; then
 fi
 
 . /usr/modules/init/bash
-module load R/2.10.1
+module load openmpi
 
-echo R < synbb.r --no-save --do-to-js $MODE -c $CLUSTER
-R < synbb.r --no-save --do-to-js $MODE -c $CLUSTER
+if [ "$MODE" == "" ]; then
+	R < synbb.r --no-save -c $CLUSTER
+else
+	R < synbb.r --no-save -p $MODE -c $CLUSTER
+fi

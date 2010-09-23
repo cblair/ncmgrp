@@ -1,0 +1,11 @@
+#To run from command line (testing only with small data sets only):
+#R < synbb.r --slave -c <cluster>
+#i.e.
+R < synbb.r --slave -c 003SCFtt
+
+#On IBEST systems, you must load the openmpi module first, and use 
+# the version of R that comes with openmpi, especially while using
+# synbb.r's -p option
+#i.e.
+module load opempi
+R < synbb.r --slave -c 003SCFtt
