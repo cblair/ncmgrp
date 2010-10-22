@@ -102,6 +102,7 @@ if(parallel) {
 	clusterExport(c1, "al")
 	clusterExport(c1, "ma")
 	#cellgrid <- parLapply(c1, 1:length(al$x), get.cellgrid)
+	print("Starting par cellgrid construction")
 	cellgrid <- parLapply(c1, 1:length(al$x), get.cellgrid.with.mas)
 } else {
 	#cellgrid <- lapply(1:length(al$x), get.cellgrid)
@@ -112,10 +113,9 @@ cellgrid <- cellgrid[!is.na(cellgrid)]
 #cellgrid = step()
 endtime <- proc.time()[3]
 print(paste("Cellgrid construction time was",endtime - starttime))
-proc.time()
-q()
 
-bb.var <- get.bb.var()
+#calculate bb variables
+bb.var <- get.bb.var() #bb variance
 
 foreach.cellgrid <- function(i) {
 	if(!is.na(cellgrid[i][[1]][[2]])) {

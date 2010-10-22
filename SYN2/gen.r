@@ -259,39 +259,46 @@ SumLogLik = SumLogLik+LogLoc.g.u[i]
 }
 
 ## Synoptic Bivariate Normal Model #######################################################
-
-sbvnle = function(track,AvailList,locAvailFile,start.val = NULL)
+synbbfit = function(track,AvailList,locAvailFile,start.val = NULL)
 {
 require(MASS)
 
-habmat = AvailList[[1]] #Just take the first one for now...
-
-#Parameters are: meanx, meany,ln(stddev x), ln(stddev y), correlation, ThetaW1, ...)
-ubounds = c(rep(Inf,2),rep(Inf,2),0.999, rep(Inf,ncol(habmat)-2))
-lbounds = c(rep(-Inf,2),rep(-Inf,2),-0.999, rep(-Inf,ncol(habmat)-2))
+habmat = AvailList[[1]] #For finding number of covariates
+print("TS268")
+#Parameters are: bbsd, ThetaW1, ... 
+ubounds = c(Inf,rep(Inf,ncol(habmat)-2))
+print("TS271")
+lbounds = c(-Inf,rep(-Inf,ncol(habmat)-2))
+print("TS273")
 
 stime = Sys.time()
 #If problems during optimization occur, try a different optimization method
 
 #mle.sep = optim(start.val, sepLogLik, method = "Nelder-Mead",hessian = TRUE, track =track,AvailList=AvailList,control=list(maxit=500, reltol = .00001))
-mle.sbvn = optim(start.val, sbvnLogLik, method = "L-BFGS-B", lower = lbounds, upper=ubounds,hessian = TRUE, track = track,AvailList=AvailList,control=list(maxit=100))
-#mle.sbvn = optim(start.val, sbvnLogLik, method = "BFGS", lower = lbounds, upper=ubounds,hessian = TRUE, track = track,AvailList=AvailList,control=list(maxit=100))
+print("TS278")
+print(ubounds)
+print("TS280")
+print(lbounds)
+print("TS281")
+mle.synbb = optim(start.val, synbbLogLik, method = "L-BFGS-B", lower = lbounds, upper=ubounds,hessian = TRUE, track = track,AvailList=AvailList,control=list(maxit=100))
+print("TS280")
+#mle.synbb = optim(start.val, sbvnLogLik, method = "BFGS", lower = lbounds, upper=ubounds,hessian = TRUE, track = track,AvailList=AvailList,control=list(maxit=100))
 #mle.sep = optim(start.val, sepLogLik, method = "SANN",hessian = TRUE, track =track,AvailList=AvailList,control=list(maxit=26, reltol = .00001))
 
 etime = Sys.time()
 
 Hessian = T
   if(Hessian){
-    covmat = 2*ginv(mle.sbvn$hessian)
+    covmat = 2*ginv(mle.synbb$hessian)
     se = sqrt(diag(covmat))
   } else {
     covmat = NULL
-    se = rep(NA,length(mle.sbvn$par))
+    se = rep(NA,length(mle.synbb$par))
   }       
-  z = mle.sbvn$par/se
+  z = mle.synbb$par/se
   p.val = 2*(1-pnorm(abs(z)))
-  parTable = cbind(Est = mle.sbvn$par, SE = se, Lower=mle.sbvn$par-1.96*se,
-              Upper=mle.sbvn$par+1.96*se, Z=z, P = p.val)
+  parTable = cbind(Est = mle.synbb$par, SE = se, Lower=mle.synbb$par-1.96*se,
+              Upper=mle.synbb$par+1.96*se, Z=z, P = p.val)
   dimnames(parTable)[[1]] = c('mu.x','mu.y','ln.stddev.x','ln.stddev.y', 'correlation',  colnames(habmat)[-c(1:2)])
 #----------------------------------------------------------------------------------------
 #Calculate probability of use distribution
@@ -300,7 +307,7 @@ for (k in 1:length(AvailList)){
 starttime <- proc.time()[3]
 habmat = AvailList[[k]]
 
-paramSBVN = mle.sbvn$par
+paramSBVN = mle.synbb$par
   meanx = paramSBVN[1]
   meany = paramSBVN[2]
   sdx = exp(paramSBVN[3])
@@ -362,29 +369,27 @@ runtime <- endtime - starttime
 #print(runtime)
 } #end AvailList loop
 K = length(start.val)
-AIC = mle.sbvn$value + 2*K
+AIC = mle.synbb$value + 2*K
 AICc = AIC+(2*K*(K+1)/(length(track)-K-1))
 
 #Return a list of results
     list(parTable=(parTable),
-          covmat = 2*ginv(mle.sbvn$hessian),
-          Neg2xLikelihood = mle.sbvn$value,
+          covmat = 2*ginv(mle.synbb$hessian),
+          Neg2xLikelihood = mle.synbb$value,
           AICc = AICc,
           evalTime = difftime(etime,stime),
-          convergence=(mle.sbvn$convergence==0), UseDistList)
+          convergence=(mle.synbb$convergence==0), UseDistList)
 }
 
 # =======================================================================================
 # Likelihood Function
-sbvnLogLik = function(paramSBVN, track,AvailList)
+synbbLogLik = function(paramSYNBB, track,AvailList)
 {
-  meanx = paramSBVN[1]
-  meany = paramSBVN[2]
-  sdx = exp(paramSBVN[3])
-  sdy = exp(paramSBVN[4])
-  corr = (paramSBVN[5])
+  sdbb = exp(paramSYNBB[1])
+
 
 #Calculate volume under non-normalized use function
+#from here...
 habmat = AvailList[[1]]  #Just use the first one for now... no covariate values are used
 maxy = max(habmat[,2])
 maxx = max(habmat[,1])
@@ -397,13 +402,11 @@ tempY2 = 1/tempY
 maxY2 = ginv(min(tempY2))+maxy
 dimy = maxy-maxY2
 cellsize = as.numeric(dimx*dimy)
-Map.g.a.1 = 1/((2*pi)*sdx*sdy*sqrt(1-corr^2))
-Map.g.a.2 = -1/(2*(1-corr^2))
-Map.g.a.3 = (((habmat[,1]-meanx)/sdx)^2)+(((habmat[,2]-meany)/sdy)^2)-(2*corr*((habmat[,1]-meanx)/sdx)*((habmat[,2]-meany)/sdy))
-Map.g.a = Map.g.a.1*exp(Map.g.a.2*Map.g.a.3) 
+#to here - 
+#
 
 SumLogLik = 0
-LogLoc.g.u=array(0,nrow(track))
+LogLoc.g.u=array(0,nrow(track)) #
 
 extlen <- 0
 if(syn.only) {
@@ -413,62 +416,48 @@ else {
 	extlen <- length(cellgrid)
 }
 #for (i in 1:nrow(track)){
-for (i in 1:extlen) {
+for (i in 1:extlen) { #for even locations
   #get appropriate availability map
   if(syn.only) {availname = locAvailFile[i]}
   else {availname = cellgrid[i][[1]][[3]]$ExtentFile[2]}
-  habmat = AvailList[[availname]]
-# Selection Function in original paper  ***do not use--not tested***
-#  W = 1
-#  for (j in 6:length(paramSBVN))
-#  {
-#  Wj = 1+habmat[,(j-2)]*paramSBVN[j]
-#  W = W*Wj
-#  }
-#  wMap = W
-# Exponential Selection Function
- if (length(paramSBVN)==5){
-  wMap = 1
- } else {
-  if(length(paramSBVN)==6){
-   wMap = exp(habmat[,3]*paramSBVN[6])
-  } else {
-   wMap = exp(habmat[,3:ncol(habmat)]%*%paramSBVN[6:length(paramSBVN)])
-  }
- }
-MapNonNorm.g.u = Map.g.a*wMap
-MapVolume = sum(MapNonNorm.g.u*cellsize)
+  habmat = AvailList[[availname]] #clip by current triplicate
+  Map.g.a = #jon will send me stuff
+  if(i %% 2 == 0) {
+	# Exponential Selection Function
+	if (length(paramSYNBB)==1){
+	wMap = 1
+	} else {
+		if(length(paramSYNBB)==2){
+		wMap = exp(habmat[,3]*paramSYNBB[2])
+	} else {
+		wMap = exp(habmat[,3:ncol(habmat)]%*%paramSYNBB[3:length(paramSYNBB)])
+  	}
+ 	}
+	MapNonNorm.g.u = Map.g.a*wMap
+	MapVolume = sum(MapNonNorm.g.u*cellsize)
+	#need to check:
+	# when there are no covariates, that map volume =~ 1 (> .97), ie we didn't out more than ~3%
 
-#Calculate Log-likelihood
-# Selection function in original paper  ***do not use--not tested***
-#  W = 1
-#  for (j in 6:length(paramSBVN))
-#  {
-#  Wj = 1+track[,(j-1)]*paramSBVN[j]
-#  W = W*Wj
-#  }
-#  wLoc = W
-# Exponential selection function
- if (length(paramSBVN)==5){
-  wLoc = 1
- } else {
-  if(length(paramSBVN)==6){
-   wLoc = exp(track[i,-(1:3)]*paramSBVN[6])
-  } else {
-   wLoc = exp(track[i,-(1:3)]%*%paramSBVN[6:length(paramSBVN)])
-  }
- }
+	#Calculate Log-likelihood
+	# Exponential selection function
+	if (length(paramSYNBB)==1){
+		wLoc = 1
+ 	} else {
+  		if(length(paramSYNBB)==2){
+   		wLoc = exp(track[i,-(1:3)]*paramSYNBB[3])
+  	} else {
+		wLoc = exp(track[i,-(1:3)]%*%paramSYNBB[3:length(paramSYNBB)])
+  	 }
+ 	}
 
-Loc.g.a.1 = 1/((2*pi)*sdx*sdy*sqrt(1-corr^2))
-Loc.g.a.2 = -1/(2*(1-corr^2))
-Loc.g.a.3 = (((track[i,1]-meanx)/sdx)^2)+(((track[i,2]-meany)/sdy)^2)-(2*corr*((track[i,1]-meanx)/sdx)*((track[i,2]-meany)/sdy))
-Loc.g.a = Loc.g.a.1*exp(Loc.g.a.2*Loc.g.a.3) 
-density = Loc.g.a*wLoc/MapVolume
-if(is.na(density)){density=10^-320}
-if(density==0){density=10^-320}
-LogLoc.g.u[i]=log(density)
-SumLogLik = SumLogLik+LogLoc.g.u[i]
-} #end loop through locations
+	density <- get.bb.density(sdbb,MapVolume, wLoc) #we need to get this out of this LogLik func
+
+	if(is.na(density)){density=10^-320}
+	if(density==0){density=10^-320}
+	LogLoc.g.u[i]=log(density)
+	SumLogLik = SumLogLik+LogLoc.g.u[i]
+	}
+  } #end loop through locations
 -2*SumLogLik
 }
 
@@ -504,3 +493,42 @@ get.bb.var <- function() {
 	BBVariance = SumDistanceSqByN
 	return(BBVariance)
 }
+
+get.bb.density <- function(sdbb, MapVolume, wLoc) {
+		#SortedBBArray(x, 0) = x val
+		#SortedBBArray(x, 1) = y val	
+		#SortedBBArray(0, x) = first trip 
+		#SortedBBArray(1, x) = second trip, etc
+		#SortedBBArray(x, 2) = time	
+
+	
+	bb.density <- 0
+	count <- length(cellgrid)
+	lapply(1:length(cellgrid), function (i) { #foreach trip
+		#TimeI = SortedBBArray(I, 2) - SortedBBArray(I - 1, 2) #time diff between 1 and 2 of trip
+		TimeI <- cellgrid[i][[1]][[3]]$time[2] - cellgrid[i][[1]][[3]]$time[1]
+
+		#TotalTimeI = SortedBBArray(I + 1, 2) - SortedBBArray(I - 1, 2) #time diff between 1 and 3
+		TotalTimeI <-  cellgrid[i][[1]][[3]]$time[3] +  cellgrid[i][[1]][[3]]$time[1]
+
+		#BBMeanXi = (TimeI / TotalTimeI) * (SortedBBArray(I + 1, 0) - SortedBBArray(I - 1, 0)) + SortedBBArray(I - 1, 0) #(time) * mean + 1st 
+		BBMeanXi <- (TimeI / TotalTimeI) * (cellgrid[i][[1]][[3]]$x[3] - cellgrid[i][[1]][[3]]$x[1]) + cellgrid[i][[1]][[3]]$x[1]
+
+		#BBMeanYi = (TimeI / TotalTimeI) * ((SortedBBArray(I + 1, 1) - SortedBBArray(I - 1, 1)) + SortedBBArray(I - 1, 1) #
+		BBMeanYi <- (TimeI / TotalTimeI) * (cellgrid[i][[1]][[3]]$y[3] - cellgrid[i][[1]][[3]]$y[1]) + cellgrid[i][[1]][[3]]$y[1]
+		
+		#DistanceSqByN = ((SortedBBArray(I, 0) - BBMeanXi) ^ 2 + (SortedBBArray(I, 1) - BBMeanYi) ^ 2) / (count - 1) 
+		DistanceSq <- ((cellgrid[i][[1]][[3]]$x[2] - BBMeanXi) ^ 2 + (cellgrid[i][[1]][[3]]$y[2] - BBMeanYi) ^ 2)
+		
+		Alpha <- TimeI / TotalTimeI
+
+		Stand <- TotalTimeI * Alpha * (1 - Alpha) * sdbb
+
+		Loc.g.a <- 1/(2 * pi * Stand) * exp(-0.5 * (DistanceSq/Stand)) #1 over all?
+
+		bb.density <<- Loc.g.a * wLoc / MapVolume #this probably doesn't go here, density is not just from the last iteration
+	 }
+	)
+	return(bb.density)
+}
+

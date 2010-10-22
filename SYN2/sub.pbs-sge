@@ -23,7 +23,7 @@ fi
 module load openmpi
 
 if [ "$MODE" == "" ]; then
-	R < synbb.r --no-save -c $CLUSTER
+	R < synbb.r --no-save -c $CLUSTER &> out.temp
 else
-	R < synbb.r --no-save -p $MODE -c $CLUSTER
+	R < synbb.r --no-save -p $MODE -c $CLUSTER &> out.temp
 fi
