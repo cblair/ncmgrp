@@ -258,7 +258,7 @@ SumLogLik = SumLogLik+LogLoc.g.u[i]
 -2*SumLogLik
 }
 
-## Synoptic Bivariate Normal Model #######################################################
+## Synoptic Brownian Bridge Model #######################################################
 synbbfit = function(track,AvailList,locAvailFile,start.val = NULL)
 {
 require(MASS)
@@ -390,6 +390,7 @@ synbbLogLik = function(paramSYNBB, track,AvailList)
 
 #Calculate volume under non-normalized use function
 #from here...
+#cellsize ticket
 habmat = AvailList[[1]]  #Just use the first one for now... no covariate values are used
 maxy = max(habmat[,2])
 maxx = max(habmat[,1])
@@ -402,6 +403,7 @@ tempY2 = 1/tempY
 maxY2 = ginv(min(tempY2))+maxy
 dimy = maxy-maxY2
 cellsize = as.numeric(dimx*dimy)
+#end cellsize ticket
 #to here - 
 #
 
@@ -461,12 +463,25 @@ for (i in 1:extlen) { #for even locations
 -2*SumLogLik
 }
 
+#get the area of the first square that's vertices are made by the first points
+#in the data. The data should be spaced evenly for all points
+get.ma.gridsize <- function(ma) {
+	xdif <- ma$x[2] - ma$x[1]
+	ydif <- 0
+	for(i in 1:length(ma$y) - 1) {
+		ydif <- ma$y[i] - ma$y[i + 1]
+		if(length(ydif) != 0 && ydif != 0) {return(xdif*ydif)} #return the area
+	}
+	return(xdif*ydif) #return the area
+}
+
 get.bb.var <- function() {
-		#SortedBBArray(x, 0) = x val
-		#SortedBBArray(x, 1) = y val	
-		#SortedBBArray(0, x) = first trip 
-		#SortedBBArray(1, x) = second trip, etc
-		#SortedBBArray(x, 2) = time	
+	#old code vs new code guide
+	#SortedBBArray(x, 0) = x val
+	#SortedBBArray(x, 1) = y val	
+	#SortedBBArray(0, x) = first trip 
+	#SortedBBArray(1, x) = second trip, etc
+	#SortedBBArray(x, 2) = time	
 
 	SumDistanceSqByN <- 0
 	count <- length(cellgrid)
@@ -495,13 +510,6 @@ get.bb.var <- function() {
 }
 
 get.bb.density <- function(sdbb, MapVolume, wLoc) {
-		#SortedBBArray(x, 0) = x val
-		#SortedBBArray(x, 1) = y val	
-		#SortedBBArray(0, x) = first trip 
-		#SortedBBArray(1, x) = second trip, etc
-		#SortedBBArray(x, 2) = time	
-
-	
 	bb.density <- 0
 	count <- length(cellgrid)
 	lapply(1:length(cellgrid), function (i) { #foreach trip
@@ -531,4 +539,3 @@ get.bb.density <- function(sdbb, MapVolume, wLoc) {
 	)
 	return(bb.density)
 }
-

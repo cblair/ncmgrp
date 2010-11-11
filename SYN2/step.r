@@ -38,32 +38,20 @@ get.cellgrid.with.mas <- function(i) {
 		newymin <- ymin - (ymax - ymin)
 		newymax <- ymax + (ymax - ymin)
 
-		#insert ma
-		#add each row of ma to the appropriate cell in the cellgrid
-		z <- 1
+		#get ma values within x and y values of this cellgrid cell
 		ma.temp <- NA
-		#by(ma, 1:nrow(ma), function(row) {
-			#print(paste("TS",row$x,xmin,row$x,xmax,row$y,ymin,row$y,ymax))
-		#	if(((row$x >= newxmin) && (row$x <= newxmax) && (row$y >= newymin) && (row$y <= newymax))) {
-                #                if(is.na(ma.temp)) {
-                #                        ma.temp <<- row
-                #                }
-                #                else {
-                #                        ma.temp <<- rbind(ma.temp, row)
-                #                }
-                #        }
-                #	z <<- z + 1
-                	#print(paste("loc",z,"done"))
-         	# }
-        	#)
-		
 		ma.temp <- ma[(ma$x >= newxmin),]
 		ma.temp <- ma.temp[(ma.temp$x <= newxmax),]
 		ma.temp <- ma.temp[(ma.temp$y >= newymin),]
 		ma.temp <- ma.temp[(ma.temp$y <= newymax),]
 		
 		print(paste("cellgrid",i,"done bin'ing"))
-		return(list(data.frame(xmin=newxmin, xmax=newxmax, ymin=newymin, ymax=newymax), ma.temp, as.data.frame(rbind(al[i - 1,], al[i,], al[i + 1,]))))
+		#cellgrid structure:
+		#	cellgrid[x][[1]] = filterred ma, used later for different ma models, reduction
+		#			of columns on cellgrid[[2]], i.e different models
+		#	cellgrid[x][[2]] = this cellgrid cell's ma values 
+		#	cellgrid[x][[3]] = triplicate info dataframe from the location dataframe
+		return(list(data.frame(), ma.temp, as.data.frame(rbind(al[i - 1,], al[i,], al[i + 1,]))))
 	}
 	return(NA)
 }#end function

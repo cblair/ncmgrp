@@ -87,6 +87,25 @@ syn <- function(al, ma) {
 	names(PrevSYNBBParamEsts) = c("bbsd",colnames(AvailList[[1]])[-c(1:2)])
 	#for synbb mode:
 	#names(PrevBVNParamEsts) = c("bb.var",colnames(AvailList[[1]])[-c(1:2)])
+	for(k in 1:length(ModelsList)) {
+		#print("ts91")
+		#print(k)
+		lapply(1:length(cellgrid), function(i) {
+		print(paste("TS94:",i))
+		#lapply(1, function(i) {
+			cellgrid[i][[1]][[1]] <<- cellgrid[i][[1]][[2]][1:2]
+			z <- 1
+		 	#because we want to ignore x and y cols
+			for(j in ModelsList[[k]]) {
+				if(ModelsList[[k]][z] == 1) {
+					cellgrid[i][[1]][[1]] <<- merge(cellgrid[i][[1]][[1]], cellgrid[i][[1]][[2]][z+2], all.x=TRUE)
+				}
+				z <- z + 1
+			}
+		} ) #end insert filtered ma in each cellgrid
+	}
+	print(cellgrid[1][[1]])
+	q()
 
 	for (k in 1:length(ModelsList)){
     		#delete columns (i.e., variables) in Availability grids, and Track not used 
@@ -110,7 +129,9 @@ syn <- function(al, ma) {
 	  		}# end if statement
 		} #end variable column loopi
 		print("TS112")
-  		#-----------------------------------------------------------------------------------
+		#Kill each cellgrid ma col that we don't need
+  		
+		#-----------------------------------------------------------------------------------
 		### Synoptic with brownian bridge
 		# Get initial parameter values
 		ThetaW = c(rep(0, ncol(CurrentTrack)-4))	#Initial RSF coeff. set to 0; no selection 
@@ -145,6 +166,7 @@ syn <- function(al, ma) {
 		print("TS147")
 		print(locAvailFile)
 
+		#
 		SYNBB.fit = synbbfit(CurrentTrack,CurrentAList,locAvailFile, start.val=paramSYNBB)
 		#change sbvnle to synbble, names only
 

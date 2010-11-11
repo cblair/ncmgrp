@@ -70,30 +70,6 @@ for(i in 3:ncol(ma)) { #start at 3, ignore x and y cols
         }
 #end normalize
 
-#################################################
-#Process
-if(do.to.js == TRUE) {
-	al$Julian <- al$time * 24 * 60 * 60
-	al = al[order(al$Julian),]
-}
-if(bb.only == TRUE) {
-	synbb.outfile <- cluster
-	print("Processing bb without cellgrids...")
-	bb(al)
-	q()
-}
-if(syn.only == TRUE) {
-	synbb.outfile <- cluster
-	print("Processing syn without cellgrids...")
-	syn(al,ma)
-	q()
-}
-
-#else, we are doing bb and syn by triplicates
-synbb.outfile = "step"
-        
-#################################################3
-#Start for processing
 #build cellgrid
 cellgrid <- list()
 print("Starting cellgrid construction...")
@@ -109,20 +85,35 @@ if(parallel) {
 	cellgrid <- lapply(1:length(al$x), get.cellgrid.with.mas)
 }
 cellgrid <- cellgrid[!is.na(cellgrid)]
-#insert ma's
-#cellgrid = step()
 endtime <- proc.time()[3]
 print(paste("Cellgrid construction time was",endtime - starttime))
 
-#calculate bb variables
+#calculate auxillary variables
 bb.var <- get.bb.var() #bb variance
+ma.gridsize <- get.ma.gridsize(ma) 
 
+
+#################################################
+#Process options
+if(do.to.js == TRUE) {
+	al$Julian <- al$time * 24 * 60 * 60
+	al = al[order(al$Julian),]
+}
+
+#else, we are doing bb and syn by triplicates
+synbb.outfile = "step"
+
+        
+#################################################3
+#Start for processing
+
+#apply operations foreach element in the cellgrid
 foreach.cellgrid <- function(i) {
 	if(!is.na(cellgrid[i][[1]][[2]])) {
 		synbb.outfile <<- paste("trip-",i,sep="")
-		print(paste("Running bb for cellgrid",i,"of",length(cellgrid)))
-		cellgrid[i][[1]][[3]]$Julian <- cellgrid[3][[1]][[3]]$time * 24 * 60
-		bb(cellgrid[i][[1]][[3]], bb.var)
+		#print(paste("Running bb for cellgrid",i,"of",length(cellgrid)))
+		#cellgrid[i][[1]][[3]]$Julian <- cellgrid[3][[1]][[3]]$time * 24 * 60
+		#bb(cellgrid[i][[1]][[3]], bb.var)
 	}
 	#else {
 		
@@ -136,7 +127,6 @@ foreach.cellgrid <- function(i) {
 #} else {
 	lapply(1:length(cellgrid), foreach.cellgrid)
 #}
-
 
 print("Processing syn using cellgrids...")
 synbb.outfile = "syn"
