@@ -70,6 +70,9 @@ for(i in 3:ncol(ma)) { #start at 3, ignore x and y cols
         }
 #end normalize
 
+#import habitat (ma) models
+source("models.r")
+
 #build cellgrid
 cellgrid <- list()
 print("Starting cellgrid construction...")
@@ -127,6 +130,7 @@ foreach.cellgrid <- function(i) {
 #} else {
 	lapply(1:length(cellgrid), foreach.cellgrid)
 #}
+
 
 print("Processing syn using cellgrids...")
 synbb.outfile = "syn"

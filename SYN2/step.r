@@ -44,14 +44,24 @@ get.cellgrid.with.mas <- function(i) {
 		ma.temp <- ma.temp[(ma.temp$x <= newxmax),]
 		ma.temp <- ma.temp[(ma.temp$y >= newymin),]
 		ma.temp <- ma.temp[(ma.temp$y <= newymax),]
-		
+	
+		#create ma of Models
+		ma.element <- data.frame()
+		ma.list <- lapply(1:length(ModelsList), function(z) {
+        		for(name in ModelsList[z]) {
+                		ma.element <<- ma.temp[name]
+        		}
+        	return(ma.element) 
+		} ) 
+	
 		print(paste("cellgrid",i,"done bin'ing"))
 		#cellgrid structure:
 		#	cellgrid[x][[1]] = filterred ma, used later for different ma models, reduction
 		#			of columns on cellgrid[[2]], i.e different models
 		#	cellgrid[x][[2]] = this cellgrid cell's ma values 
 		#	cellgrid[x][[3]] = triplicate info dataframe from the location dataframe
-		return(list(data.frame(), ma.temp, as.data.frame(rbind(al[i - 1,], al[i,], al[i + 1,]))))
+		#return(list(data.frame(), ma.temp, as.data.frame(rbind(al[i - 1,], al[i,], al[i + 1,]))))
+		return(list(data.frame(), ma.list, as.data.frame(rbind(al[i - 1,], al[i,], al[i + 1,]))))
 	}
 	return(NA)
 }#end function

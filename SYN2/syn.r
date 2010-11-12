@@ -87,26 +87,6 @@ syn <- function(al, ma) {
 	names(PrevSYNBBParamEsts) = c("bbsd",colnames(AvailList[[1]])[-c(1:2)])
 	#for synbb mode:
 	#names(PrevBVNParamEsts) = c("bb.var",colnames(AvailList[[1]])[-c(1:2)])
-	for(k in 1:length(ModelsList)) {
-		#print("ts91")
-		#print(k)
-		lapply(1:length(cellgrid), function(i) {
-		print(paste("TS94:",i))
-		#lapply(1, function(i) {
-			cellgrid[i][[1]][[1]] <<- cellgrid[i][[1]][[2]][1:2]
-			z <- 1
-		 	#because we want to ignore x and y cols
-			for(j in ModelsList[[k]]) {
-				if(ModelsList[[k]][z] == 1) {
-					cellgrid[i][[1]][[1]] <<- merge(cellgrid[i][[1]][[1]], cellgrid[i][[1]][[2]][z+2], all.x=TRUE)
-				}
-				z <- z + 1
-			}
-		} ) #end insert filtered ma in each cellgrid
-	}
-	print(cellgrid[1][[1]])
-	q()
-
 	for (k in 1:length(ModelsList)){
     		#delete columns (i.e., variables) in Availability grids, and Track not used 
       		Nvariables = sum(ModelsList[[k]]) #number of variables in current model
@@ -118,8 +98,13 @@ syn <- function(al, ma) {
       		names(CurrentAList)=names(AvailFileNames)     	
 		cc=3
 		for (col in 3:ncol(AvailList[[1]])){
-	  		if (ModelsList[[k]][col-2]==1){
-          			CurrentTrack=cbind(CurrentTrack, Track[,col+2])
+		
+		#print(colnames(AvailList[[k]])[col])
+		#q()
+	  	
+			#if(ModelsList[[k]][col-2]==1){
+          		if(colnames(AvailList[[k]])[col] %in% ModelsList[k]) {
+				CurrentTrack=cbind(CurrentTrack, Track[,col+2])
 				colnames(CurrentTrack)[cc+1]=colnames(AvailList[[i]])[col]
 	    			for (i in 1:length(AvailList)){
 					CurrentAList[[i]]=cbind(CurrentAList[[i]],AvailList[[i]][,col])
@@ -129,7 +114,6 @@ syn <- function(al, ma) {
 	  		}# end if statement
 		} #end variable column loopi
 		print("TS112")
-		#Kill each cellgrid ma col that we don't need
   		
 		#-----------------------------------------------------------------------------------
 		### Synoptic with brownian bridge
