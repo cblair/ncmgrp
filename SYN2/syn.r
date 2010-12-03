@@ -22,63 +22,6 @@ syn <- function(al, ma) {
 	modfname = paste(workdir,"/models.r",sep="")
 	source(modfname)
 
-	#============================================================================
-	#For temporally changing habitat values, create a list of availability grids
-	AvailFileNames = table(locAvailFile)
-	AvailList=list()
-	for (i in 1:length(AvailFileNames)){
-		#filename = paste(workdir,"/",names(AvailFileNames)[i],sep="")
-		#habmat = as.matrix(read.table(file=filename,head=T,sep=''))
-		habmat = as.matrix(ma)
-		habmat = apply(habmat[,1:(ncol(habmat))],2,as.numeric)
-		AvailList[i] = list(habmat)
-	}
-	names(AvailList)=names(AvailFileNames)
-	#====================================================================================	
-	#Standardize Covariates to range 0 to 1; this helps with likelihood calculations
-	mins = matrix(NA,length(AvailList),ncol(AvailList[[1]]))
-	maxs=mins
-	#Enter absolute minimum and maximum values for each covariate from all of the input availability grids
-	#The first 2 columns are for x and y coordinates and mins and maxs can be set to 0, these values will 
-	#be ingored
-	#Auto calculating min max added 07/01/10
-	minmaxfilename = paste(workdir,"/",cluster,"_master_avail.txt",sep="")
-	minmax = read.table(minmaxfilename, sep='\t',header=TRUE, as.is=TRUE) 
-	#minmax <- ma
-	#change to calculate off of every ma submitted, not just current one
-	colmin <- c()
-	colmax <- c()
-	for(i in 1:ncol(minmax)) {
-		colmin <- c(colmin, min(minmax[,i]))
-		colmax <- c(colmax, max(minmax[,i]))
-	}
-	#end auto calc min max
-	names(colmax) = c("mu.x", "mu.y", colnames(AvailList[[1]])[-c(1:2)])
-	CoVarMinMax = matrix(0,2,ncol(AvailList[[1]]))
-	CoVarMinMax[1,]=colmin
-	CoVarMinMax[2,]=colmax
-	colnames(CoVarMinMax)=names(colmax)
-	rownames(CoVarMinMax)=c("min", "max")
-	
-	#Write output file of minimum and maximum values for each input variable
-	outputfile = paste(synbb.outfile,"-",origfilename,"_CoVar_MinMax.txt", sep = "")
-	data.frame(CoVarMinMax)
-	write.table (CoVarMinMax, file = outputfile)
-		
-	#colmin = c(0,0,0,0,300)
-	#colmax = c(0,0,4000,89,3000)
-	#Standardize Covariates in Availability grids
-	for (i in 1:length(AvailList)){
-		for (col in 3:ncol(AvailList[[1]])){
-			AvailList[[i]][,col]=(AvailList[[i]][,col]-colmin[col])/(colmax[col]-colmin[col])
-		} # end column loop
-	} # end list loop
-
-	#Standardize Covariates in location data
-	for (col in 3:ncol(AvailList[[1]])){
-	Track[,col+2]=(Track[,col+2]-colmin[col])/(colmax[col]-colmin[col])
- 	} # end column loop
-
 	#===================================================================================
 	#===================================================================================
 	# Loop through candidate models;

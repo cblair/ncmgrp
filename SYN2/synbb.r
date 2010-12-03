@@ -62,13 +62,51 @@ Rprof(profile.fname)
 alfname = paste(workdir,"/",cluster,"_all_locations.txt",sep="")
 #al = all locations
 al = read.table(alfname, sep='\t',header=TRUE, as.is=TRUE)
-masterfname = paste(workdir,"/",cluster,"_master_avail.txt",sep="")
-ma = read.table(masterfname, sep='\t',header=TRUE, as.is=TRUE)
-#normalize
-for(i in 3:ncol(ma)) { #start at 3, ignore x and y cols
-                ma[,i] <- ma[,i] / max(ma[,i])
-        }
-#end normalize
+#ma setup
+ma.flist = unique(al$ExtentFile)
+#ma.flist = list.files(workdir,pattern=paste(cluster,"_master_avail*",sep=""))
+ma.list <- lapply(1:length(ma.flist), function(i) {
+	masterfname = paste(workdir,"/",ma.flist[i],sep="")
+	retval <- read.table(masterfname, sep='\t',header=TRUE, as.is=TRUE)
+	retval$ExtentFile = ma.flist[i]
+	return(retval)
+} )
+
+#################################################
+#Process for each ma in the ma list
+ 
+#make one big ma for use in normalization
+ma.combined = ma.list[[1]]
+for(i in 2:length(ma.list)) {ma.combined <- rbind(ma.combined, ma.list[[i]])}
+
+#al normalize
+for(coln in names(al)) {
+	if((coln != "x") && (coln != "y") && (coln != "time") && (coln != "sd") && (coln != "ExtentFile")) {
+		#al[,i] <- (al[,i] - min(ma[,i-2])) /  (max(ma[,i-2]) - min(ma[,i-2]))
+		if(coln %in% names(ma.combined)) {
+			print(paste("Normalizing location data column",coln))
+			al[,coln] <- (al[,coln] - min(ma.combined[,coln])) /  (max(ma.combined[,coln]) - min(ma.combined[,coln]))
+		} else {
+			print(paste("Warning: column",coln,"in location data, but not in habitat data."))
+		}
+	}
+}
+#end al normalize
+#ma normalize
+for(i in 1:length(ma.list)) {
+	for(coln in names(ma.combined)) {
+		if((coln != "x") && (coln != "y") && (coln != "time") && (coln != "sd") && (coln != "ExtentFile")) {
+               		#ma[,i] <-  (ma[,i] - min(ma[,i])) /  (max(ma[,i]) - min(ma[,i])) 
+			print(paste("Normalizing habitat data column",coln))
+			ma.list[[i]][,coln] <-  (ma.list[[i]][,coln] - min(ma.combined[,coln])) /  (max(ma.combined[,coln]) - min(ma.combined[,coln])) 
+		}
+	}
+}
+#end ma normalize
+
+#record what mins and maxes we used for normlization
+#x <- data.frame(min=(min(ma.combined)),max=(max(ma.combined)))
+#write.table(x,file="norm_data.r")
 
 #import habitat (ma) models
 source("models.r")
@@ -79,7 +117,7 @@ print("Starting cellgrid construction...")
 starttime <- proc.time()[3]
 if(parallel) {	
 	clusterExport(c1, "al")
-	clusterExport(c1, "ma")
+	clusterExport(c1, "ma.list")
 	#cellgrid <- parLapply(c1, 1:length(al$x), get.cellgrid)
 	print("Starting par cellgrid construction")
 	cellgrid <- parLapply(c1, 1:length(al$x), get.cellgrid.with.mas)
@@ -93,7 +131,7 @@ print(paste("Cellgrid construction time was",endtime - starttime))
 
 #calculate auxillary variables
 bb.var <- get.bb.var() #bb variance
-ma.gridsize <- get.ma.gridsize(ma) 
+ma.gridsize <- get.ma.gridsize(ma.combined) 
 
 
 #################################################
@@ -135,6 +173,7 @@ foreach.cellgrid <- function(i) {
 print("Processing syn using cellgrids...")
 synbb.outfile = "syn"
 syn(al, ma)
+
 
 #close parallel ops
 if(parallel == TRUE) {

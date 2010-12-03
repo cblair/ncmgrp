@@ -38,20 +38,35 @@ get.cellgrid.with.mas <- function(i) {
 		newymin <- ymin - (ymax - ymin)
 		newymax <- ymax + (ymax - ymin)
 
+		#get ma values from the corresponding ms.list element
+		##check that all 3 points have the same ExtentFile
+		#if(!((al[i-1]$ExtentFile == al[i]$ExtentFile) && (al[i]$ExtentFile == al[i+1]$ExtentFile))) {
+		#	print("Warning: This triplicate ma data is truncated")
+		#}
+		##build the ma based on the middle triplicate's ExtentFile
+		ma.name <- ""
+		ma.element <- data.frame()
+		for(ma in ma.list) {
+			if(ma$ExtentFile[1] == al$ExtentFile[i]) {
+				ma.element <- ma
+				ma.name <- ma$ExtentFile[1]
+			}
+		}
+
 		#get ma values within x and y values of this cellgrid cell
-		ma.temp <- NA
-		ma.temp <- ma[(ma$x >= newxmin),]
-		ma.temp <- ma.temp[(ma.temp$x <= newxmax),]
-		ma.temp <- ma.temp[(ma.temp$y >= newymin),]
-		ma.temp <- ma.temp[(ma.temp$y <= newymax),]
+		ma.clip <- NA
+		ma.clip <- ma.element[(ma.element$x >= newxmin),]
+		ma.clip <- ma.clip[(ma.clip$x <= newxmax),]
+		ma.clip <- ma.clip[(ma.clip$y >= newymin),]
+		ma.clip <- ma.clip[(ma.clip$y <= newymax),]
 	
 		#create ma of Models
-		ma.element <- data.frame()
-		ma.list <- lapply(1:length(ModelsList), function(z) {
+		ma.melement <- data.frame()
+		ma.mlist <- lapply(1:length(ModelsList), function(z) {
         		for(name in ModelsList[z]) {
-                		ma.element <<- ma.temp[name]
+                		ma.melement <<- ma.clip[name]
         		}
-        	return(ma.element) 
+        	return(ma.melement) 
 		} ) 
 	
 		print(paste("cellgrid",i,"done bin'ing"))
@@ -60,8 +75,7 @@ get.cellgrid.with.mas <- function(i) {
 		#			of columns on cellgrid[[2]], i.e different models
 		#	cellgrid[x][[2]] = this cellgrid cell's ma values 
 		#	cellgrid[x][[3]] = triplicate info dataframe from the location dataframe
-		#return(list(data.frame(), ma.temp, as.data.frame(rbind(al[i - 1,], al[i,], al[i + 1,]))))
-		return(list(data.frame(), ma.list, as.data.frame(rbind(al[i - 1,], al[i,], al[i + 1,]))))
+		return(list(ma.name, ma.mlist, as.data.frame(rbind(al[i - 1,], al[i,], al[i + 1,]))))
 	}
 	return(NA)
 }#end function
