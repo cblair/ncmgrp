@@ -92,6 +92,7 @@ for(coln in names(al)) {
 	}
 }
 #end al normalize
+#to add - tell them mins and max's and ask them if they want to input their own
 #ma normalize
 for(i in 1:length(ma.list)) {
 	for(coln in names(ma.combined)) {

@@ -4,30 +4,17 @@
 locAvailFile <- c()
 
 syn <- function(al, ma) {
-	#(3) choose locations file:
-	#locationsfile = paste(cluster, "_all_locations.txt", sep="") 
- 
-	#origfilename = strsplit(locationsfile,"\\.")[[1]][1]
-	#origfilename = paste(synbb.outfile,"-",min(al$x),"-",max(al$x),"-",min(al$y),"-",max(al$y), sep="")
-	origfilename = paste(synbb.outfile,"-",sep="")
-	#Track = as.matrix(read.table(file= locationsfile,head=T,sep=''))
 	Track = as.matrix(al)
-	#separate text refering to availability file from track data
-	#locAvailFile <<- Track[,ncol(Track) - 1]
-	locAvailFile <<- al$ExtentFile
-	Track = apply(Track[,1:(ncol(Track)-1)],2,as.numeric)
-	#(4) specify which variables will be used: use '1' to specify a variable that will be
-	# used and '0' for variables that will not be used
-
-	modfname = paste(workdir,"/models.r",sep="")
-	source(modfname)
 
 	#===================================================================================
 	#===================================================================================
 	# Loop through candidate models;
 
-	PrevSYNBBParamEsts = array(0,(ncol(AvailList[[1]])-1))
-	names(PrevSYNBBParamEsts) = c("bbsd",colnames(AvailList[[1]])[-c(1:2)])
+	PrevSYNBBParamEsts = array(0,(ncol(Track) - 4)) #
+	names(PrevSYNBBParamEsts) = c("bbsd",colnames(al[5:(ncol(al) - 1)]))
+	print(colnames(al))
+	print(PrevSYNBBParamEsts)
+	q()
 	#for synbb mode:
 	#names(PrevBVNParamEsts) = c("bb.var",colnames(AvailList[[1]])[-c(1:2)])
 	for (k in 1:length(ModelsList)){
@@ -35,6 +22,7 @@ syn <- function(al, ma) {
       		Nvariables = sum(ModelsList[[k]]) #number of variables in current model
 		CurrentAList=list()
       		CurrentTrack=Track[,1:4] 					#keep x, y, time, sd
+		#CurrentTrack=as.matrix(rbind(al$x,al$y,al$time,al$sd))
 		for (i in 1:length(AvailList)){
 	 	CurrentAList[[i]]=AvailList[[i]][,1:2]			#keep x and y
 		} #end availability list loop

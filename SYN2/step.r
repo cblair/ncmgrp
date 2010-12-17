@@ -38,6 +38,10 @@ get.cellgrid.with.mas <- function(i) {
 		newymin <- ymin - (ymax - ymin)
 		newymax <- ymax + (ymax - ymin)
 
+		#calc BB
+		#bb(as.data.frame(rbind(al[i - 1,], al[i,])), 10000)
+		#bb(as.data.frame(rbind(al[i,], al[i + 1,])), 10000)
+
 		#get ma values from the corresponding ms.list element
 		##check that all 3 points have the same ExtentFile
 		#if(!((al[i-1]$ExtentFile == al[i]$ExtentFile) && (al[i]$ExtentFile == al[i+1]$ExtentFile))) {
