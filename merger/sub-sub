@@ -1,0 +1,17 @@
+#!/bin/sh
+
+MODE=""
+NODES=""
+if [ $# -lt 1 ] || [ $# -gt 2 ]; then
+	echo $#'Usage: sub-sub <file name> [nodes for parallely processing]'
+	exit 1
+fi
+if [ $# -eq 2 ]; then
+	NODES="-pe orte $2"
+fi
+
+JOBDATA=jobdata
+
+QSUB="qsub -N merger-$1 -o merger-$1.o -e merger-$1.e -v FILE=$1 $NODES sub.pbs-sge"
+echo $QSUB
+echo `$QSUB`

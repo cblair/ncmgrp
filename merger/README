@@ -1,0 +1,5 @@
+To run, type something like:
+	qsub -v $FILE="Collar00403test_merger.txt" -pe orte 43 sub.pbs-sge
+
+Replace with the file you want. Or just use sub-sub:
+	./sub-sub "Collar00404_merger.txt" 43
