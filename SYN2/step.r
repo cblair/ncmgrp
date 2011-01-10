@@ -67,8 +67,8 @@ get.cellgrid.with.mas <- function(i) {
 		#create ma of Models
 		ma.melement <- data.frame()
 		ma.mlist <- lapply(1:length(ModelsList), function(z) {
-        		for(name in ModelsList[z]) {
-                		ma.melement <<- ma.clip[name]
+        		for(name in c("x","y",ModelsList[z])) { #need to automatically put in x and y
+					ma.melement <<- ma.clip[name]
         		}
         	return(ma.melement) 
 		} ) 

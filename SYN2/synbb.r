@@ -173,7 +173,7 @@ foreach.cellgrid <- function(i) {
 
 print("Processing syn using cellgrids...")
 synbb.outfile = "syn"
-syn(al, ma)
+syn(al)
 
 
 #close parallel ops

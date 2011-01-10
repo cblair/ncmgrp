@@ -1,68 +1,40 @@
 # Synoptic Model for Analyzing Animal Space Use
 # By: Jon Horne; jhorne@uidaho.edu
 
-locAvailFile <- c()
-
-syn <- function(al, ma) {
+syn <- function(al) {
+	al$ExtentFile <- NULL #blow away ExtentFile col, not needed anymore
 	Track = as.matrix(al)
+
 
 	#===================================================================================
 	#===================================================================================
 	# Loop through candidate models;
 
-	PrevSYNBBParamEsts = array(0,(ncol(Track) - 4)) #
-	names(PrevSYNBBParamEsts) = c("bbsd",colnames(al[5:(ncol(al) - 1)]))
-	print(colnames(al))
-	print(PrevSYNBBParamEsts)
-	q()
+	#Previous SYNBB Paramater Estimates has colnames of the Covariants 
+	# (non-required columns)
+	RequiredVars <- c("x","y","time","sd")
+	CovarColNames <- c("bbsd",colnames(al[!colnames(al) %in% RequiredVars]))
+	PrevSYNBBParamEsts = array(0,(length(CovarColNames))) 
+	names(PrevSYNBBParamEsts) = CovarColNames
+	
 	#for synbb mode:
-	#names(PrevBVNParamEsts) = c("bb.var",colnames(AvailList[[1]])[-c(1:2)])
 	for (k in 1:length(ModelsList)){
-    		#delete columns (i.e., variables) in Availability grids, and Track not used 
-      		Nvariables = sum(ModelsList[[k]]) #number of variables in current model
-		CurrentAList=list()
-      		CurrentTrack=Track[,1:4] 					#keep x, y, time, sd
-		#CurrentTrack=as.matrix(rbind(al$x,al$y,al$time,al$sd))
-		for (i in 1:length(AvailList)){
-	 	CurrentAList[[i]]=AvailList[[i]][,1:2]			#keep x and y
-		} #end availability list loop
-      		names(CurrentAList)=names(AvailFileNames)     	
+    		#delete columns (i.e., variables) in Track not used 
+      		CurrentTrack=Track[,c(RequiredVars,ModelsList[[k]])] #keep x, y, time, sd
 		cc=3
-		for (col in 3:ncol(AvailList[[1]])){
-		
-		#print(colnames(AvailList[[k]])[col])
-		#q()
-	  	
-			#if(ModelsList[[k]][col-2]==1){
-          		if(colnames(AvailList[[k]])[col] %in% ModelsList[k]) {
-				CurrentTrack=cbind(CurrentTrack, Track[,col+2])
-				colnames(CurrentTrack)[cc+1]=colnames(AvailList[[i]])[col]
-	    			for (i in 1:length(AvailList)){
-					CurrentAList[[i]]=cbind(CurrentAList[[i]],AvailList[[i]][,col])
-             				colnames(CurrentAList[[i]])[cc]=colnames(AvailList[[1]])[col]	
-	    			} #end availability list loop  
-				cc = cc+1                  
-	  		}# end if statement
-		} #end variable column loopi
-		print("TS112")
   		
 		#-----------------------------------------------------------------------------------
 		### Synoptic with brownian bridge
 		# Get initial parameter values
-		ThetaW = c(rep(0, ncol(CurrentTrack)-4))	#Initial RSF coeff. set to 0; no selection 
+		ThetaW = c(rep(0, ncol(CurrentTrack)-3))	#Initial RSF coeff. set to 0; no selection 
 		if (k==1){
 			#get initial bb standard
 			bbsd = sqrt(bb.var)
 			print("TSxxx")
 		} else { #==> use estimated parameters of previous models (if they exist) for initial values
-		print("TSxxx2")
 			#get new estimate of bb.var
-			mu = SBVN.fit$parTable[1:2,1]
-			sdx = exp(SBVN.fit$parTable[3,1])
 			bbsd = exp(SYNBB.fit$partable[1,1])
-			sdy = exp(SBVN.fit$parTable[4,1])
-			corrXY = (SBVN.fit$parTable[5,1])
-			names(ThetaW) = colnames(CurrentAList[[1]])[3:ncol(CurrentAList[[1]])]
+			names(ThetaW) = colnames(Track)
 			for (i in 1:length(PrevBVNParamEsts)){
 				for (j in 1:length(ThetaW)){
 					if(names(PrevBVNParamEsts)[i]==names(ThetaW)[j]){
@@ -75,18 +47,10 @@ syn <- function(al, ma) {
 		lnbbsd = log(bbsd)
 		paramSYNBB = c(lnbbsd, ThetaW)
 
-		#print out each arg to compare with data
-		print("TS145")
-		print(CurrentAList)
-		print("TS147")
-		print(locAvailFile)
-
-		#
-		SYNBB.fit = synbbfit(CurrentTrack,CurrentAList,locAvailFile, start.val=paramSYNBB)
+		SYNBB.fit = synbbfit(CurrentTrack,start.val=paramSYNBB)
 		#change sbvnle to synbble, names only
 
 		#PrevBVNParamEsts[rownames(SBVN.fit$parTable)]=SBVN.fit$parTable[rownames(SBVN.fit$parTable),1]
-		print("TS165")
 		PrevSYNBBParamEsts[rownames(SYNBB.fit$parTable)]=SYNBB.fit$parTable[rownames(SYNBB.fit$parTable),1]
 
 		#Transform back parameter estimates for sdx and sdy

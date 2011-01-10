@@ -259,17 +259,21 @@ SumLogLik = SumLogLik+LogLoc.g.u[i]
 }
 
 ## Synoptic Brownian Bridge Model #######################################################
-synbbfit = function(track,AvailList,locAvailFile,start.val = NULL)
+synbbfit = function(track,start.val = NULL)
 {
 require(MASS)
 
-habmat = AvailList[[1]] #For finding number of covariates
-print("TS268")
+#habmat = AvailList[[1]] #For finding number of covariates
 #Parameters are: bbsd, ThetaW1, ... 
-ubounds = c(Inf,rep(Inf,ncol(habmat)-2))
-print("TS271")
-lbounds = c(-Inf,rep(-Inf,ncol(habmat)-2))
-print("TS273")
+ubounds = c(Inf,rep(Inf,ncol(track)-3))
+print("TS269")
+lbounds = c(-Inf,rep(-Inf,ncol(track)-3))
+print(start.val)
+print("TS272")
+print(start.val)
+print("TS274")
+print(track)
+print("TS276")
 
 stime = Sys.time()
 #If problems during optimization occur, try a different optimization method
@@ -280,8 +284,8 @@ print(ubounds)
 print("TS280")
 print(lbounds)
 print("TS281")
-mle.synbb = optim(start.val, synbbLogLik, method = "L-BFGS-B", lower = lbounds, upper=ubounds,hessian = TRUE, track = track,AvailList=AvailList,control=list(maxit=100))
-print("TS280")
+mle.synbb = optim(start.val, synbbLogLik, method = "L-BFGS-B", lower = lbounds, upper=ubounds,hessian = TRUE, track = track,control=list(maxit=100))
+print("TS282")
 #mle.synbb = optim(start.val, sbvnLogLik, method = "BFGS", lower = lbounds, upper=ubounds,hessian = TRUE, track = track,AvailList=AvailList,control=list(maxit=100))
 #mle.sep = optim(start.val, sepLogLik, method = "SANN",hessian = TRUE, track =track,AvailList=AvailList,control=list(maxit=26, reltol = .00001))
 
