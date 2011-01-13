@@ -259,15 +259,15 @@ SumLogLik = SumLogLik+LogLoc.g.u[i]
 }
 
 ## Synoptic Brownian Bridge Model #######################################################
-synbbfit = function(track,start.val = NULL)
+synbbfit = function(track,start.val = NULL,k)
 {
 require(MASS)
 
 #habmat = AvailList[[1]] #For finding number of covariates
 #Parameters are: bbsd, ThetaW1, ... 
-ubounds = c(Inf,rep(Inf,ncol(track)-3))
+ubounds = c(Inf,rep(Inf,ncol(track)-4))
 print("TS269")
-lbounds = c(-Inf,rep(-Inf,ncol(track)-3))
+lbounds = c(-Inf,rep(-Inf,ncol(track)-4))
 print(start.val)
 print("TS272")
 print(start.val)
@@ -284,7 +284,7 @@ print(ubounds)
 print("TS280")
 print(lbounds)
 print("TS281")
-mle.synbb = optim(start.val, synbbLogLik, method = "L-BFGS-B", lower = lbounds, upper=ubounds,hessian = TRUE, track = track,control=list(maxit=100))
+mle.synbb = optim(start.val, synbbLogLik, method = "L-BFGS-B", lower = lbounds, upper=ubounds,hessian = TRUE, track = track,k=k,control=list(maxit=100))
 print("TS282")
 #mle.synbb = optim(start.val, sbvnLogLik, method = "BFGS", lower = lbounds, upper=ubounds,hessian = TRUE, track = track,AvailList=AvailList,control=list(maxit=100))
 #mle.sep = optim(start.val, sepLogLik, method = "SANN",hessian = TRUE, track =track,AvailList=AvailList,control=list(maxit=26, reltol = .00001))
@@ -387,29 +387,18 @@ AICc = AIC+(2*K*(K+1)/(length(track)-K-1))
 
 # =======================================================================================
 # Likelihood Function
-synbbLogLik = function(paramSYNBB, track,AvailList)
+synbbLogLik = function(paramSYNBB, track, k)
 {
   sdbb = exp(paramSYNBB[1])
 
 
 #Calculate volume under non-normalized use function
-#from here...
-#cellsize ticket
-habmat = AvailList[[1]]  #Just use the first one for now... no covariate values are used
-maxy = max(habmat[,2])
-maxx = max(habmat[,1])
-tempX = habmat[,1]-maxx
-tempX2 = 1/tempX
-maxX2 = ginv(min(tempX2))+maxx
-dimx = maxx-maxX2
-tempY = habmat[,2]-maxy
-tempY2 = 1/tempY
-maxY2 = ginv(min(tempY2))+maxy
-dimy = maxy-maxY2
-cellsize = as.numeric(dimx*dimy)
-#end cellsize ticket
-#to here - 
-#
+
+#taking the cellsize from the first cellgrid, they should be all the same
+cellsize <- cellgrid[1][[1]][[1]]$ma.cellsize 
+print(cellsize)
+print(cellgrid[1])
+q()
 
 SumLogLik = 0
 LogLoc.g.u=array(0,nrow(track)) #
@@ -422,11 +411,8 @@ else {
 	extlen <- length(cellgrid)
 }
 #for (i in 1:nrow(track)){
-for (i in 1:extlen) { #for even locations
-  #get appropriate availability map
-  if(syn.only) {availname = locAvailFile[i]}
-  else {availname = cellgrid[i][[1]][[3]]$ExtentFile[2]}
-  habmat = AvailList[[availname]] #clip by current triplicate
+for (i in length(cellgrid)) {
+  habmat = cellgrid[i][[1]][[3]] #clip by current triplicate
   Map.g.a = #jon will send me stuff
   if(i %% 2 == 0) {
 	# Exponential Selection Function

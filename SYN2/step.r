@@ -64,22 +64,27 @@ get.cellgrid.with.mas <- function(i) {
 		ma.clip <- ma.clip[(ma.clip$y >= newymin),]
 		ma.clip <- ma.clip[(ma.clip$y <= newymax),]
 	
+		#get ma cellsize
+		ma.cellsize = max(abs(diff(ma.clip$x))) * max(abs(diff(ma.clip$y)))
+
 		#create ma of Models
 		ma.melement <- data.frame()
 		ma.mlist <- lapply(1:length(ModelsList), function(z) {
-        		for(name in c("x","y",ModelsList[z])) { #need to automatically put in x and y
-					ma.melement <<- ma.clip[name]
+        		#this doesn't work like you think it does...
+			for(name in ModelsList[z]) {
+				ma.melement <<- ma.clip[name]
         		}
-        	return(ma.melement) 
+        		return(ma.melement)
 		} ) 
-	
+
 		print(paste("cellgrid",i,"done bin'ing"))
 		#cellgrid structure:
-		#	cellgrid[x][[1]] = filterred ma, used later for different ma models, reduction
-		#			of columns on cellgrid[[2]], i.e different models
+		#	cellgrid[x][[1]] = triplicate properties
+		#			- $ma.name
+		#			- $ma.cellsize, avg area of ma cells
 		#	cellgrid[x][[2]] = this cellgrid cell's ma values 
 		#	cellgrid[x][[3]] = triplicate info dataframe from the location dataframe
-		return(list(ma.name, ma.mlist, as.data.frame(rbind(al[i - 1,], al[i,], al[i + 1,]))))
+		return(list(data.frame(ma.name=ma.name, ma.cellsize=ma.cellsize), ma.mlist, as.data.frame(rbind(al[i - 1,], al[i,], al[i + 1,]))))
 	}
 	return(NA)
 }#end function

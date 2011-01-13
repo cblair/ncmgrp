@@ -4,8 +4,6 @@
 syn <- function(al) {
 	al$ExtentFile <- NULL #blow away ExtentFile col, not needed anymore
 	Track = as.matrix(al)
-
-
 	#===================================================================================
 	#===================================================================================
 	# Loop through candidate models;
@@ -13,20 +11,23 @@ syn <- function(al) {
 	#Previous SYNBB Paramater Estimates has colnames of the Covariants 
 	# (non-required columns)
 	RequiredVars <- c("x","y","time","sd")
-	CovarColNames <- c("bbsd",colnames(al[!colnames(al) %in% RequiredVars]))
+	CovarColNames <- c(colnames(al[!colnames(al) %in% RequiredVars]))
 	PrevSYNBBParamEsts = array(0,(length(CovarColNames))) 
 	names(PrevSYNBBParamEsts) = CovarColNames
 	
 	#for synbb mode:
 	for (k in 1:length(ModelsList)){
+		print(ModelsList[[k]])
     		#delete columns (i.e., variables) in Track not used 
       		CurrentTrack=Track[,c(RequiredVars,ModelsList[[k]])] #keep x, y, time, sd
 		cc=3
   		
+	print("TS")
 		#-----------------------------------------------------------------------------------
 		### Synoptic with brownian bridge
 		# Get initial parameter values
-		ThetaW = c(rep(0, ncol(CurrentTrack)-3))	#Initial RSF coeff. set to 0; no selection 
+		print(ncol(CurrentTrack))
+		ThetaW = c(rep(0, (ncol(CurrentTrack)-4)))	#Initial RSF coeff. set to 0; no selection 
 		if (k==1){
 			#get initial bb standard
 			bbsd = sqrt(bb.var)
@@ -47,7 +48,7 @@ syn <- function(al) {
 		lnbbsd = log(bbsd)
 		paramSYNBB = c(lnbbsd, ThetaW)
 
-		SYNBB.fit = synbbfit(CurrentTrack,start.val=paramSYNBB)
+		SYNBB.fit = synbbfit(CurrentTrack,start.val=paramSYNBB, k=k)
 		#change sbvnle to synbble, names only
 
 		#PrevBVNParamEsts[rownames(SBVN.fit$parTable)]=SBVN.fit$parTable[rownames(SBVN.fit$parTable),1]
