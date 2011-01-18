@@ -112,9 +112,9 @@ for(i in 1:length(ma.list)) {
 #import habitat (ma) models
 source("models.r")
 #add required values to models
-ModelsList <- lapply(1:length(ModelsList), function(z) {
-		return(c("x","y",ModelsList[z],recursive=TRUE))
-	} )
+#ModelsList <- lapply(1:length(ModelsList), function(z) {
+#		return(c("x","y",ModelsList[z],recursive=TRUE))
+#	} )
 
 #build cellgrid
 cellgrid <- list()

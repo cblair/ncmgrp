@@ -396,61 +396,71 @@ synbbLogLik = function(paramSYNBB, track, k)
 
 #taking the cellsize from the first cellgrid, they should be all the same
 cellsize <- cellgrid[1][[1]][[1]]$ma.cellsize 
-print(cellsize)
-print(cellgrid[1])
-q()
 
 SumLogLik = 0
 LogLoc.g.u=array(0,nrow(track)) #
 
-extlen <- 0
-if(syn.only) {
-	extlen <- nrow(track)
-}
-else {
-	extlen <- length(cellgrid)
-}
-#for (i in 1:nrow(track)){
 for (i in length(cellgrid)) {
-  habmat = cellgrid[i][[1]][[3]] #clip by current triplicate
-  Map.g.a = #jon will send me stuff
-  if(i %% 2 == 0) {
-	# Exponential Selection Function
-	if (length(paramSYNBB)==1){
-	wMap = 1
-	} else {
-		if(length(paramSYNBB)==2){
-		wMap = exp(habmat[,3]*paramSYNBB[2])
-	} else {
-		wMap = exp(habmat[,3:ncol(habmat)]%*%paramSYNBB[3:length(paramSYNBB)])
-  	}
- 	}
-	MapNonNorm.g.u = Map.g.a*wMap
-	MapVolume = sum(MapNonNorm.g.u*cellsize)
-	#need to check:
-	# when there are no covariates, that map volume =~ 1 (> .97), ie we didn't out more than ~3%
+	habmat = cellgrid[i][[1]][[2]][[k]] #clip by current triplicate
+	Map.g.a <<- matrix(0,nrow=nrow(habmat),ncol=3)
 
-	#Calculate Log-likelihood
-	# Exponential selection function
-	if (length(paramSYNBB)==1){
-		wLoc = 1
- 	} else {
-  		if(length(paramSYNBB)==2){
-   		wLoc = exp(track[i,-(1:3)]*paramSYNBB[3])
-  	} else {
-		wLoc = exp(track[i,-(1:3)]%*%paramSYNBB[3:length(paramSYNBB)])
-  	 }
- 	}
+	for(j in 1:nrow(habmat)) {
+		loc.id <- i * 2
+		StartX <- track[(loc.id - 1),1]
+		StartY <- track[(loc.id - 1),2]
+		EndX <- track[(loc.id + 1),1]
+		EndY <- track[(loc.id + 1),2]
+		StartSTD <- track[(loc.id - 1),4]
+		EndSTD <- track[(loc.id + 1),4]
+		StartTime <- track[(loc.id - 1),3]
+		EndTime <- track[(loc.id + 1),3]
 
-	density <- get.bb.density(sdbb,MapVolume, wLoc) #we need to get this out of this LogLik func
-
-	if(is.na(density)){density=10^-320}
-	if(density==0){density=10^-320}
-	LogLoc.g.u[i]=log(density)
-	SumLogLik = SumLogLik+LogLoc.g.u[i]
+		TotalTimeJ <- EndTime - StartTime
+		TimeStep <- TotalTimeJ / 100 #number of parts for numerical integration
+		TimeT <- 0
+		SumProbAcrossTime <- 0.0
+		while(TimeT <= TotalTimeJ) {
+			Alpha <- TimeT / TotalTimeJ
+			MeanXTimeT <- StartX + ((Alpha) * (EndX - StartX))
+			MeanYTimeT <- StartY + ((Alpha) * (EndY - StartY))
+			VarTimeT <- TotalTimeJ * Alpha * (1 - Alpha) * sdbb ^ 2 + (((1 - Alpha) ^ 2) * (StartSTD ^ 2)) + ((Alpha) * (EndSTD ^ 2)) #sdbb gets changed in this maximization routine
+			SqDist <- ((habmat[j,1] - MeanXTimeT) ^ 2) + ((habmat[j,2] - MeanYTimeT) ^ 2)
+			ProbTimeT <- (1 / sqrt(2 * pi * VarTimeT)) * exp(-0.5 * (SqDist / VarTimeT)) * TimeStep
+			SumProbAcrossTime <- SumProbAcrossTime + ProbTimeT
+			TimeT <- TimeT + TimeStep
+		}
+		BBProbAtGridPoint <- SumProbAcrossTime
+		Map.g.a[j,3] <<- BBProbAtGridPoint
+		Map.g.a[j,1] <<- habmat[j,1]
+		Map.g.a[j,2] <<- habmat[j,2]
 	}
+
+	if(length(paramSYNBB) == 1) {
+		wMap <- 1
+	} else {
+		if(length(paramSYNBB) == 2) {
+			wMap <- exp(habmat[,3] * paramSYNBB[2])
+		} else {
+			wMap <- exp(habmat[,3:ncol(habmat)] %*% paramSYNBB[2:length(paramSYNBB)])
+		}
+	}
+	
+	MapNonNorm.g.u <- Map.g.a * wMap
+	MapVolume <- sum(MapNonNorm.g.u * cellsize)
+	print("Map.g.a")
+	print(Map.g.a)
+	print("MapNonNorm.g.u")
+	print(MapNonNorm.g.u)
+	q()
+
+	#density <- get.bb.density(sdbb,MapVolume, wLoc) #we need to get this out of this LogLik func
+
+	#if(is.na(density)){density=10^-320}
+	#if(density==0){density=10^-320}
+	#LogLoc.g.u[i]=log(density)
+	#SumLogLik = SumLogLik+LogLoc.g.u[i]
+
   } #end loop through locations
--2*SumLogLik
 }
 
 #get the area of the first square that's vertices are made by the first points

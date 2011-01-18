@@ -69,9 +69,13 @@ get.cellgrid.with.mas <- function(i) {
 
 		#create ma of Models
 		ma.melement <- data.frame()
-		ma.mlist <- lapply(1:length(ModelsList), function(z) {
+		#add x and y cordinates here
+		ModelsListTemp <- lapply(1:length(ModelsList), function(z) {
+               		return(c("x","y",ModelsList[z],recursive=TRUE))
+		       } )
+		ma.mlist <- lapply(1:length(ModelsListTemp), function(z) {
         		#this doesn't work like you think it does...
-			for(name in ModelsList[z]) {
+			for(name in ModelsListTemp[z]) {
 				ma.melement <<- ma.clip[name]
         		}
         		return(ma.melement)

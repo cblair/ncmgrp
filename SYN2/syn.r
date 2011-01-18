@@ -19,8 +19,9 @@ syn <- function(al) {
 	for (k in 1:length(ModelsList)){
 		print(ModelsList[[k]])
     		#delete columns (i.e., variables) in Track not used 
-      		CurrentTrack=Track[,c(RequiredVars,ModelsList[[k]])] #keep x, y, time, sd
-		cc=3
+      		CurrentTrack=Track[,unique(c(RequiredVars,ModelsList[[k]]))] #keep x, y, time, sd
+		
+		print(CurrentTrack)
   		
 	print("TS")
 		#-----------------------------------------------------------------------------------
