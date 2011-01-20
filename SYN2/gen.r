@@ -406,61 +406,80 @@ for (i in length(cellgrid)) {
 
 	for(j in 1:nrow(habmat)) {
 		loc.id <- i * 2
-		StartX <- track[(loc.id - 1),1]
-		StartY <- track[(loc.id - 1),2]
-		EndX <- track[(loc.id + 1),1]
-		EndY <- track[(loc.id + 1),2]
-		StartSTD <- track[(loc.id - 1),4]
-		EndSTD <- track[(loc.id + 1),4]
-		StartTime <- track[(loc.id - 1),3]
-		EndTime <- track[(loc.id + 1),3]
+		StartX1 <- track[(loc.id - 1),1]
+		StartY1 <- track[(loc.id - 1),2]
+		EndX3 <- track[(loc.id + 1),1]
+		EndY3 <- track[(loc.id + 1),2]
+		StartSTD1 <- track[(loc.id - 1),4]
+		EndSTD3 <- track[(loc.id + 1),4]
+		StartTime1 <- track[(loc.id - 1),3]
+		EndTime3 <- track[(loc.id + 1),3]
 
-		TotalTimeJ <- EndTime - StartTime
-		TimeStep <- TotalTimeJ / 100 #number of parts for numerical integration
+		TotalTime13 <- EndTime3 - StartTime1
+		TimeStep <- TotalTime13 / 100 #number of parts for numerical integration
 		TimeT <- 0
-		SumProbAcrossTime <- 0.0
-		while(TimeT <= TotalTimeJ) {
-			Alpha <- TimeT / TotalTimeJ
-			MeanXTimeT <- StartX + ((Alpha) * (EndX - StartX))
-			MeanYTimeT <- StartY + ((Alpha) * (EndY - StartY))
-			VarTimeT <- TotalTimeJ * Alpha * (1 - Alpha) * sdbb ^ 2 + (((1 - Alpha) ^ 2) * (StartSTD ^ 2)) + ((Alpha) * (EndSTD ^ 2)) #sdbb gets changed in this maximization routine
+		SumPDFAcrossTime <- 0.0
+		while(TimeT <= TotalTime13) {
+			Alpha <- TimeT / TotalTime13
+			MeanXTimeT <- StartX1 + ((Alpha) * (EndX3 - StartX1))
+			MeanYTimeT <- StartY1 + ((Alpha) * (EndY3 - StartY1))
+			VarTimeT <- TotalTime13 * Alpha * (1 - Alpha) * sdbb ^ 2 + (((1 - Alpha) ^ 2) * (StartSTD1 ^ 2)) + ((Alpha ^ 2) * (EndSTD3 ^ 2)) #sdbb gets changed in this maximization routine
 			SqDist <- ((habmat[j,1] - MeanXTimeT) ^ 2) + ((habmat[j,2] - MeanYTimeT) ^ 2)
-			ProbTimeT <- (1 / sqrt(2 * pi * VarTimeT)) * exp(-0.5 * (SqDist / VarTimeT)) * TimeStep
-			SumProbAcrossTime <- SumProbAcrossTime + ProbTimeT
+			PDFTimeT <- (1 / (2 * pi * VarTimeT)) * exp(-0.5 * (SqDist / VarTimeT)) * TimeStep
+			SumPDFAcrossTime <- SumPDFAcrossTime + PDFTimeT
 			TimeT <- TimeT + TimeStep
 		}
-		BBProbAtGridPoint <- SumProbAcrossTime
-		Map.g.a[j,3] <<- BBProbAtGridPoint
+		BBPDFAtGridPoint <- (SumPDFAcrossTime / TotalTime13)
+		Map.g.a[j,3] <<- BBPDFAtGridPoint
 		Map.g.a[j,1] <<- habmat[j,1]
 		Map.g.a[j,2] <<- habmat[j,2]
 	}
 
 	if(length(paramSYNBB) == 1) {
 		wMap <- 1
+		wLoc <- 1
 	} else {
 		if(length(paramSYNBB) == 2) {
 			wMap <- exp(habmat[,3] * paramSYNBB[2])
+			wLoc <- exp(track[loc.id,5] * paramSYNBB[2])
 		} else {
 			wMap <- exp(habmat[,3:ncol(habmat)] %*% paramSYNBB[2:length(paramSYNBB)])
+			wLoc <- exp(track[loc.id,5:ncol(track)]) %*% paramSYNBB[2:length(paramSYNBB)]
 		}
 	}
 	
 	MapNonNorm.g.u <- Map.g.a * wMap
-	MapVolume <- sum(MapNonNorm.g.u * cellsize)
+	MapVolume <- sum(MapNonNorm.g.u)
 	print("Map.g.a")
 	print(Map.g.a)
-	print("MapNonNorm.g.u")
-	print(MapNonNorm.g.u)
+	print("MapVolume")
+	print(MapVolume)
 	q()
+	#calculate log likelihood at middle location
+	
+	EndX2 <- track[(loc.id),1]
+	EndY2 <- track[(loc.id),2]
+	EndTime2 <- track[(loc.id),3]
 
-	#density <- get.bb.density(sdbb,MapVolume, wLoc) #we need to get this out of this LogLik func
+	Time2 <- EndTime2 - StartTime1 #make sure StartTime1 is still set
+	Alpha <- Time2 / TotalTime13
+	MeanXTime2 <- StartX1 + ((Alpha) * (EndX3 - StartX1))
+	MeanYTime2 <- StartY1 + ((Alpha) * (EndY3 - StartY1))
+	SqDist <- ((EndX2 - MeanXTime2) ^ 2) + ((EndY2 - MeanYTime2) ^ 2)
+	VarTime2 <- TotalTime13 * Alpha * (1 - Alpha) * sdbb ^ 2 + (((1 - Alpha) ^ 2) * (StartSTD1 ^ 2)) + ((Alpha ^ 2) * (EndSTD3 ^ 2)) #sdbb gets changed in this maximization routine
+	Loc.g.a <- (1 / (2 * pi * VarTime2)) * exp(-0.5 * (SqDist / VarTime2))
+	Loc.g.u <- Loc.g.a * wLoc / MapVolume
+	if(is.na(Loc.g.u)) { 
+		print("Loc.g.u was na. ??")
+		q()
+	} #Loc.g.u <- 10^-320} #~ need to check if we ever get 
+	if(Loc.g.u == 0) { Loc.g.u <- 10^-320}
+	LogLoc.g.u[i] <- ln(Loc.g.u)
+	SumLogLik <- SumLogLik + LogLoc.g.u[i]
 
-	#if(is.na(density)){density=10^-320}
-	#if(density==0){density=10^-320}
-	#LogLoc.g.u[i]=log(density)
-	#SumLogLik = SumLogLik+LogLoc.g.u[i]
 
-  } #end loop through locations
+  } #end loop through triplicates
+-2*SumLogLik
 }
 
 #get the area of the first square that's vertices are made by the first points
