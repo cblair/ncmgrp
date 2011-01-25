@@ -448,12 +448,14 @@ for (i in length(cellgrid)) {
 		}
 	}
 	
-	MapNonNorm.g.u <- Map.g.a * wMap
-	MapVolume <- sum(MapNonNorm.g.u)
+	MapNonNorm.g.u <- Map.g.a[,3] * wMap
+	MapVolume <- sum(MapNonNorm.g.u * cellsize)
 	print("Map.g.a")
 	print(Map.g.a)
 	print("MapVolume")
 	print(MapVolume)
+	print("track")
+	print(track)
 	q()
 	#calculate log likelihood at middle location
 	
