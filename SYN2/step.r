@@ -22,6 +22,7 @@ get.cellgrid <- function(i) {
 #experiment for Jon
 get.cellgrid.with.mas <- function(i) {
 	if(i %% 2 == 0) {
+		local.outlier <- FALSE
 		xsection <- c(al$x[i-1], al$x[i], al$x[i+1])
 		ysection <- c(al$y[i-1], al$y[i], al$y[i+1])
 		#if one of the trips does not exist, return
@@ -33,21 +34,46 @@ get.cellgrid.with.mas <- function(i) {
 		xmax <- max(xsection)
 		ymin <- min(ysection)
 		ymax <- max(ysection)
-		newxmin <- xmin - (xmax - xmin)
-		newxmax <- xmax + (xmax - xmin)
-		newymin <- ymin - (ymax - ymin)
-		newymax <- ymax + (ymax - ymin)
 
-		#calc BB
-		#bb(as.data.frame(rbind(al[i - 1,], al[i,])), 10000)
-		#bb(as.data.frame(rbind(al[i,], al[i + 1,])), 10000)
+
+		#!
+		bbsd = sqrt(bb.var) 
+		StartX1 <- al$x[i - 1]
+                StartY1 <- al$y[i-1]
+                EndX3 <- al$x[i + 1]
+                EndY3 <- al$y[i + 1] 
+                StartSTD1 <- al$sd[i -1] 
+                EndSTD3 <- al$sd[i + 1]
+                StartTime1 <- al$time[i - 1]
+                EndTime3 <- al$time[i + 1] 
+                TotalTime13 <- EndTime3 - StartTime1
+		Time2 <- al$time[i]
+
+		Alpha <- Time2 / TotalTime13
+		MeanXTime2 <- StartX1 + ((Alpha) * (EndX3 - StartX1))
+                MeanYTime2 <- StartY1 + ((Alpha) * (EndY3 - StartY1))
+		VarTime2 <- TotalTime13 * Alpha * (1 - Alpha) * (bbsd ^ 2) + ((1 - Alpha) ^ 2) * (StartSTD1 ^ 2) + (Alpha ^ 2) * (EndSTD3 ^ 2)
+		SDTime2 <- VarTime2 
+		CI99 <- 3 * SDTime2
+		#here, in the future, may be an option of changing 3
+
+
+		newxmin <- MeanXTime2 - CI99
+		newxmax <- MeanXTime2 + CI99
+		newymin <- MeanYTime2 - CI99
+		newymax <- MeanYTime2 + CI99
+
+		#check if pos 2 is out of extent
+		if((al$x[i] > newxmax) || (al$x[i] < newxmin) 
+		|| (al$y[i] > newymax) || (al$y[i] < newymin)
+		) {
+			print("Middle location is outside of extent")
+			local.outlier <- TRUE
+		}
+
 
 		#get ma values from the corresponding ms.list element
-		##check that all 3 points have the same ExtentFile
-		#if(!((al[i-1]$ExtentFile == al[i]$ExtentFile) && (al[i]$ExtentFile == al[i+1]$ExtentFile))) {
-		#	print("Warning: This triplicate ma data is truncated")
-		#}
-		##build the ma based on the middle triplicate's ExtentFile
+		# *build the ma based on the middle triplicate's ExtentFile
 		ma.name <- ""
 		ma.element <- data.frame()
 		for(ma in ma.list) {
@@ -86,9 +112,10 @@ get.cellgrid.with.mas <- function(i) {
 		#	cellgrid[x][[1]] = triplicate properties
 		#			- $ma.name
 		#			- $ma.cellsize, avg area of ma cells
+		#			- $outlier - if 2nd location was out of extent
 		#	cellgrid[x][[2]] = this cellgrid cell's ma values 
 		#	cellgrid[x][[3]] = triplicate info dataframe from the location dataframe
-		return(list(data.frame(ma.name=ma.name, ma.cellsize=ma.cellsize), ma.mlist, as.data.frame(rbind(al[i - 1,], al[i,], al[i + 1,]))))
+		return(list(data.frame(ma.name=ma.name, ma.cellsize=ma.cellsize,outlier=local.outlier), ma.mlist, as.data.frame(rbind(al[i - 1,], al[i,], al[i + 1,]))))
 	}
 	return(NA)
 }#end function

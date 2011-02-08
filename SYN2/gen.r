@@ -398,11 +398,18 @@ synbbLogLik = function(paramSYNBB, track, k)
 cellsize <- cellgrid[1][[1]][[1]]$ma.cellsize 
 
 SumLogLik = 0
-LogLoc.g.u=array(0,nrow(track)) #
+LogLoc.g.u=array(0,nrow(track)) #i
 
-for (i in length(cellgrid)) {
+print("track")
+print(track)
+
+for (i in 1:length(cellgrid)) {
 	habmat = cellgrid[i][[1]][[2]][[k]] #clip by current triplicate
+	#print("habmat")
+	#print(habmat)
+	#q()
 	Map.g.a <<- matrix(0,nrow=nrow(habmat),ncol=3)
+	print(paste("trip:",i))
 
 	for(j in 1:nrow(habmat)) {
 		loc.id <- i * 2
@@ -414,9 +421,10 @@ for (i in length(cellgrid)) {
 		EndSTD3 <- track[(loc.id + 1),4]
 		StartTime1 <- track[(loc.id - 1),3]
 		EndTime3 <- track[(loc.id + 1),3]
-
 		TotalTime13 <- EndTime3 - StartTime1
+
 		TimeStep <- TotalTime13 / 100 #number of parts for numerical integration
+		test <- 1
 		TimeT <- 0
 		SumPDFAcrossTime <- 0.0
 		while(TimeT <= TotalTime13) {
@@ -428,6 +436,28 @@ for (i in length(cellgrid)) {
 			PDFTimeT <- (1 / (2 * pi * VarTimeT)) * exp(-0.5 * (SqDist / VarTimeT)) * TimeStep
 			SumPDFAcrossTime <- SumPDFAcrossTime + PDFTimeT
 			TimeT <- TimeT + TimeStep
+			'
+			print("test")
+			print(test)
+			print("Alpha")
+			print(Alpha)
+			print("MeanXTimeT")
+			print(MeanXTimeT)
+			print("MeanYTimeT")
+			print(MeanYTimeT)
+			print("VarTimeT")
+			print(VarTimeT)
+			print("SqDist")
+			print(SqDist)
+			print("PDFTimeT")
+			print(PDFTimeT)
+			print("SumPDFAcrossTime")
+			print(SumPDFAcrossTime)
+			print("TimeT")
+			print(TimeT)
+			test <- test + 1
+			if(test >= 3) q()
+			'
 		}
 		BBPDFAtGridPoint <- (SumPDFAcrossTime / TotalTime13)
 		Map.g.a[j,3] <<- BBPDFAtGridPoint
@@ -450,13 +480,15 @@ for (i in length(cellgrid)) {
 	
 	MapNonNorm.g.u <- Map.g.a[,3] * wMap
 	MapVolume <- sum(MapNonNorm.g.u * cellsize)
-	print("Map.g.a")
-	print(Map.g.a)
+	#print("Map.g.a")
+	#print(Map.g.a)
+	#print("sdbb")
+	#print(sdbb)
 	print("MapVolume")
 	print(MapVolume)
-	print("track")
-	print(track)
-	q()
+	#print(paste("cellgrid",i))
+	#print(cellgrid[i][[1]][[3]])
+	'q()
 	#calculate log likelihood at middle location
 	
 	EndX2 <- track[(loc.id),1]
@@ -479,7 +511,7 @@ for (i in length(cellgrid)) {
 	LogLoc.g.u[i] <- ln(Loc.g.u)
 	SumLogLik <- SumLogLik + LogLoc.g.u[i]
 
-
+'
   } #end loop through triplicates
 -2*SumLogLik
 }
@@ -496,7 +528,7 @@ get.ma.gridsize <- function(ma) {
 	return(xdif*ydif) #return the area
 }
 
-get.bb.var <- function() {
+get.bb.var <- function(al) {
 	#old code vs new code guide
 	#SortedBBArray(x, 0) = x val
 	#SortedBBArray(x, 1) = y val	
@@ -505,25 +537,27 @@ get.bb.var <- function() {
 	#SortedBBArray(x, 2) = time	
 
 	SumDistanceSqByN <- 0
-	count <- length(cellgrid)
-	lapply(1:length(cellgrid), function (i) { #foreach trip
+	count <- length(al) / 3
+	lapply(1:length(al), function (i) { #foreach trip
+	 if(i %% 2 == 0) {
 		#TimeI = SortedBBArray(I, 2) - SortedBBArray(I - 1, 2) #time diff between 1 and 2 of trip
-		TimeI <- cellgrid[i][[1]][[3]]$time[2] - cellgrid[i][[1]][[3]]$time[1]
+		TimeI <- al$time[i] - al$time[i - 1]
 
 		#TotalTimeI = SortedBBArray(I + 1, 2) - SortedBBArray(I - 1, 2) #time diff between 1 and 3
-		TotalTimeI <-  cellgrid[i][[1]][[3]]$time[3] +  cellgrid[i][[1]][[3]]$time[1]
+		TotalTimeI <-  al$time[i + 1] +  al$time[i - 1]
 
 		#BBMeanXi = (TimeI / TotalTimeI) * (SortedBBArray(I + 1, 0) - SortedBBArray(I - 1, 0)) + SortedBBArray(I - 1, 0) #(time) * mean + 1st 
-		BBMeanXi <- (TimeI / TotalTimeI) * (cellgrid[i][[1]][[3]]$x[3] - cellgrid[i][[1]][[3]]$x[1]) + cellgrid[i][[1]][[3]]$x[1]
+		BBMeanXi <- (TimeI / TotalTimeI) * (al$x[i + 1] - al$x[i - 1]) + al$x[i - 1]
 
 		#BBMeanYi = (TimeI / TotalTimeI) * ((SortedBBArray(I + 1, 1) - SortedBBArray(I - 1, 1)) + SortedBBArray(I - 1, 1) #
-		BBMeanYi <- (TimeI / TotalTimeI) * (cellgrid[i][[1]][[3]]$y[3] - cellgrid[i][[1]][[3]]$y[1]) + cellgrid[i][[1]][[3]]$y[1]
+		BBMeanYi <- (TimeI / TotalTimeI) * (al$y[i + 1] - al$y[i - 1]) + al$y[i - 1]
 		
 		#DistanceSqByN = ((SortedBBArray(I, 0) - BBMeanXi) ^ 2 + (SortedBBArray(I, 1) - BBMeanYi) ^ 2) / (count - 1) 
-		DistanceSqByN <- ((cellgrid[i][[1]][[3]]$x[2] - BBMeanXi) ^ 2 + (cellgrid[i][[1]][[3]]$y[2] - BBMeanYi) ^ 2) / (count - 1)		
+		DistanceSqByN <- ((al$x[i] - BBMeanXi) ^ 2 + (al$y[i] - BBMeanYi) ^ 2) / (count - 1)		
 		
 		BBDistanceSqByN = DistanceSqByN * (TotalTimeI / (TimeI * (TotalTimeI - TimeI)))
-		SumDistanceSqByN <<- SumDistanceSqByN + BBDistanceSqByN
+	  	SumDistanceSqByN <<- SumDistanceSqByN + BBDistanceSqByN
+	  } #end if i %% 2 == 0
 	 }
 	)
 	BBVariance = SumDistanceSqByN

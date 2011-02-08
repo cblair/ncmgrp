@@ -77,7 +77,9 @@ ma.list <- lapply(1:length(ma.flist), function(i) {
  
 #make one big ma for use in normalization
 ma.combined = ma.list[[1]]
-for(i in 2:length(ma.list)) {ma.combined <- rbind(ma.combined, ma.list[[i]])}
+if(length(ma.list) > 1) {
+	for(i in 2:length(ma.list)) {ma.combined <- rbind(ma.combined, ma.list[[i]])}
+}
 
 #al normalize
 for(coln in names(al)) {
@@ -117,6 +119,8 @@ source("models.r")
 #	} )
 
 #build cellgrid
+# calculate auxillary variables
+bb.var <- get.bb.var(al) #bb variance
 cellgrid <- list()
 print("Starting cellgrid construction...")
 starttime <- proc.time()[3]
@@ -134,8 +138,6 @@ cellgrid <- cellgrid[!is.na(cellgrid)]
 endtime <- proc.time()[3]
 print(paste("Cellgrid construction time was",endtime - starttime))
 
-#calculate auxillary variables
-bb.var <- get.bb.var() #bb variance
 ma.gridsize <- get.ma.gridsize(ma.combined) 
 
 
