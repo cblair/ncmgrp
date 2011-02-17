@@ -266,28 +266,20 @@ require(MASS)
 #habmat = AvailList[[1]] #For finding number of covariates
 #Parameters are: bbsd, ThetaW1, ... 
 ubounds = c(Inf,rep(Inf,ncol(track)-4))
-print("TS269")
 lbounds = c(-Inf,rep(-Inf,ncol(track)-4))
-print(start.val)
 print("TS272")
 print(start.val)
-print("TS274")
-print(track)
-print("TS276")
 
 stime = Sys.time()
 #If problems during optimization occur, try a different optimization method
 
 #mle.sep = optim(start.val, sepLogLik, method = "Nelder-Mead",hessian = TRUE, track =track,AvailList=AvailList,control=list(maxit=500, reltol = .00001))
-print("TS278")
-print(ubounds)
-print("TS280")
-print(lbounds)
-print("TS281")
 mle.synbb = optim(start.val, synbbLogLik, method = "L-BFGS-B", lower = lbounds, upper=ubounds,hessian = TRUE, track = track,k=k,control=list(maxit=100))
-print("TS282")
 #mle.synbb = optim(start.val, sbvnLogLik, method = "BFGS", lower = lbounds, upper=ubounds,hessian = TRUE, track = track,AvailList=AvailList,control=list(maxit=100))
 #mle.sep = optim(start.val, sepLogLik, method = "SANN",hessian = TRUE, track =track,AvailList=AvailList,control=list(maxit=26, reltol = .00001))
+
+print("mle.synbb")
+print(mle.synbb)
 
 etime = Sys.time()
 
@@ -303,75 +295,10 @@ Hessian = T
   p.val = 2*(1-pnorm(abs(z)))
   parTable = cbind(Est = mle.synbb$par, SE = se, Lower=mle.synbb$par-1.96*se,
               Upper=mle.synbb$par+1.96*se, Z=z, P = p.val)
-  dimnames(parTable)[[1]] = c('mu.x','mu.y','ln.stddev.x','ln.stddev.y', 'correlation',  colnames(habmat)[-c(1:2)])
+  dimnames(parTable)[[1]] = c('ln.sdbb', colnames(track)[-c(1:4)]) #fix for use on colnames instead
 #----------------------------------------------------------------------------------------
 #Calculate probability of use distribution
-UseDistList = list()
-for (k in 1:length(AvailList)){
-starttime <- proc.time()[3]
-habmat = AvailList[[k]]
 
-paramSBVN = mle.synbb$par
-  meanx = paramSBVN[1]
-  meany = paramSBVN[2]
-  sdx = exp(paramSBVN[3])
-  sdy = exp(paramSBVN[4])
-  corr = (paramSBVN[5])
-
-#Calculate volume under non-normalized use function
-maxy = max(habmat[,2])
-maxx = max(habmat[,1])
-tempX = habmat[,1]-maxx
-tempX2 = 1/tempX
-maxX2 = ginv(min(tempX2))+maxx
-dimx = maxx-maxX2
-tempY = habmat[,2]-maxy
-tempY2 = 1/tempY
-maxY2 = ginv(min(tempY2))+maxy
-dimy = maxy-maxY2
-cellsize = as.numeric(dimx*dimy)
-Map.g.a.1 = 1/((2*pi)*sdx*sdy*sqrt(1-corr^2))
-Map.g.a.2 = -1/(2*(1-corr^2))
-Map.g.a.3 = (((habmat[,1]-meanx)/sdx)^2)+(((habmat[,2]-meany)/sdy)^2)-(2*corr*((habmat[,1]-meanx)/sdx)*((habmat[,2]-meany)/sdy))
-Map.g.a = Map.g.a.1*exp(Map.g.a.2*Map.g.a.3) 
-
-# Selection Function in original paper ***do not use--not tested***
-#  W = 1
-#  for (j in 6:length(paramSBVN))
-#  {
-#  Wj = 1+habmat[,(j-2)]*paramSBVN[j]
-#  W = W*Wj
-#  }
-#  wMap = W
-# Exponential Selection Function
- if (length(paramSBVN)==5){
-  wMap = 1
- } else {
-  if(length(paramSBVN)==6){
-   wMap = exp(habmat[,3]*paramSBVN[6])
-  } else {
-   wMap = exp(habmat[,3:ncol(habmat)]%*%paramSBVN[6:length(paramSBVN)])
-  }
- }
-MapNonNorm.g.u = Map.g.a*wMap
-MapVolume = sum(MapNonNorm.g.u*cellsize)
-
-#Calculate probability of use grid and cummulative probability grid
-habmat = cbind(habmat,0)
-colnames(habmat)[ncol(habmat)]= "Prob"
-habmat[,ncol(habmat)] = MapNonNorm.g.u*cellsize/MapVolume
-habmat =habmat[order(habmat[,ncol(habmat)],decreasing=T),]
-habmat = cbind(habmat,0)
-colnames(habmat)[ncol(habmat)]= "CumProb"
-habmat[,ncol(habmat)]=cumsum(habmat[,(ncol(habmat)-1)])
-
-UseDistList[k] = list(habmat)
-
-endtime <- proc.time()[3]
-runtime <- endtime - starttime
-#print("seple Calculate probability of use distribution loop time:")
-#print(runtime)
-} #end AvailList loop
 K = length(start.val)
 AIC = mle.synbb$value + 2*K
 AICc = AIC+(2*K*(K+1)/(length(track)-K-1))
@@ -383,6 +310,7 @@ AICc = AIC+(2*K*(K+1)/(length(track)-K-1))
           AICc = AICc,
           evalTime = difftime(etime,stime),
           convergence=(mle.synbb$convergence==0), UseDistList)
+
 }
 
 # =======================================================================================
@@ -395,79 +323,54 @@ synbbLogLik = function(paramSYNBB, track, k)
 #Calculate volume under non-normalized use function
 
 #taking the cellsize from the first cellgrid, they should be all the same
-cellsize <- cellgrid[1][[1]][[1]]$ma.cellsize 
+#cellsize <- cellgrid[1][[1]][[1]]$ma.cellsize 
+cellsize <- 900 #fix this!
 
 SumLogLik = 0
 LogLoc.g.u=array(0,nrow(track)) #i
 
-print("track")
-print(track)
 
 for (i in 1:length(cellgrid)) {
 	habmat = cellgrid[i][[1]][[2]][[k]] #clip by current triplicate
-	#print("habmat")
-	#print(habmat)
-	#q()
+
 	Map.g.a <<- matrix(0,nrow=nrow(habmat),ncol=3)
-	print(paste("trip:",i))
+	#print(paste("trip:",i))
 
+	loc.id <- i * 2
+	StartX1 <- track[(loc.id - 1),1]
+	StartY1 <- track[(loc.id - 1),2]
+	LocX2 <- track[(loc.id),1]
+	LocY2 <- track[(loc.id),2]
+	EndX3 <- track[(loc.id + 1),1]
+	EndY3 <- track[(loc.id + 1),2]
+	StartSTD1 <- track[(loc.id - 1),4]
+	EndSTD3 <- track[(loc.id + 1),4]
+	StartTime1 <- track[(loc.id - 1),3]
+	EndTime3 <- track[(loc.id + 1),3]
+	TotalTime13 <- EndTime3 - StartTime1
+	Time2 <- track[(loc.id),3] - track[(loc.id - 1),3]
+
+	Alpha <- Time2 / TotalTime13
+	MeanXTime2 <- StartX1 + ((Alpha) * (EndX3 - StartX1))
+	MeanYTime2 <- StartY1 + ((Alpha) * (EndY3 - StartY1))
+	VarTime2 <- TotalTime13 * Alpha * (1 - Alpha) * sdbb ^ 2 + (((1 - Alpha) ^ 2) * (StartSTD1 ^ 2)) + ((Alpha ^ 2) * (EndSTD3 ^ 2)) #sdbb gets changed in this maximization routine
+	
+	starttime <- proc.time()[3]
 	for(j in 1:nrow(habmat)) {
-		loc.id <- i * 2
-		StartX1 <- track[(loc.id - 1),1]
-		StartY1 <- track[(loc.id - 1),2]
-		EndX3 <- track[(loc.id + 1),1]
-		EndY3 <- track[(loc.id + 1),2]
-		StartSTD1 <- track[(loc.id - 1),4]
-		EndSTD3 <- track[(loc.id + 1),4]
-		StartTime1 <- track[(loc.id - 1),3]
-		EndTime3 <- track[(loc.id + 1),3]
-		TotalTime13 <- EndTime3 - StartTime1
-
-		TimeStep <- TotalTime13 / 100 #number of parts for numerical integration
-		test <- 1
-		TimeT <- 0
-		SumPDFAcrossTime <- 0.0
-		while(TimeT <= TotalTime13) {
-			Alpha <- TimeT / TotalTime13
-			MeanXTimeT <- StartX1 + ((Alpha) * (EndX3 - StartX1))
-			MeanYTimeT <- StartY1 + ((Alpha) * (EndY3 - StartY1))
-			VarTimeT <- TotalTime13 * Alpha * (1 - Alpha) * sdbb ^ 2 + (((1 - Alpha) ^ 2) * (StartSTD1 ^ 2)) + ((Alpha ^ 2) * (EndSTD3 ^ 2)) #sdbb gets changed in this maximization routine
-			SqDist <- ((habmat[j,1] - MeanXTimeT) ^ 2) + ((habmat[j,2] - MeanYTimeT) ^ 2)
-			PDFTimeT <- (1 / (2 * pi * VarTimeT)) * exp(-0.5 * (SqDist / VarTimeT)) * TimeStep
-			SumPDFAcrossTime <- SumPDFAcrossTime + PDFTimeT
-			TimeT <- TimeT + TimeStep
-			'
-			print("test")
-			print(test)
-			print("Alpha")
-			print(Alpha)
-			print("MeanXTimeT")
-			print(MeanXTimeT)
-			print("MeanYTimeT")
-			print(MeanYTimeT)
-			print("VarTimeT")
-			print(VarTimeT)
-			print("SqDist")
-			print(SqDist)
-			print("PDFTimeT")
-			print(PDFTimeT)
-			print("SumPDFAcrossTime")
-			print(SumPDFAcrossTime)
-			print("TimeT")
-			print(TimeT)
-			test <- test + 1
-			if(test >= 3) q()
-			'
-		}
-		BBPDFAtGridPoint <- (SumPDFAcrossTime / TotalTime13)
-		Map.g.a[j,3] <<- BBPDFAtGridPoint
+		SqDist <- ((habmat[j,1] - MeanXTime2) ^ 2) + ((habmat[j,2] - MeanYTime2) ^ 2)
+		PDFTime2 <- (1 / (2 * pi * VarTime2)) * exp(-0.5 * (SqDist / VarTime2))
+		Map.g.a[j,3] <<- PDFTime2
 		Map.g.a[j,1] <<- habmat[j,1]
 		Map.g.a[j,2] <<- habmat[j,2]
 	}
+	endtime <- proc.time()[3]
+	runtime <- endtime - starttime
+	#print(paste("Calculated Map.g.a in",runtime,"seconds"))
 
 	if(length(paramSYNBB) == 1) {
 		wMap <- 1
 		wLoc <- 1
+		
 	} else {
 		if(length(paramSYNBB) == 2) {
 			wMap <- exp(habmat[,3] * paramSYNBB[2])
@@ -480,27 +383,14 @@ for (i in 1:length(cellgrid)) {
 	
 	MapNonNorm.g.u <- Map.g.a[,3] * wMap
 	MapVolume <- sum(MapNonNorm.g.u * cellsize)
-	#print("Map.g.a")
-	#print(Map.g.a)
-	#print("sdbb")
-	#print(sdbb)
-	print("MapVolume")
-	print(MapVolume)
-	#print(paste("cellgrid",i))
-	#print(cellgrid[i][[1]][[3]])
-	'q()
+
+	#print(paste("trip:",i))
+	#print("MapVolume")
+	#print(MapVolume)
+
 	#calculate log likelihood at middle location
 	
-	EndX2 <- track[(loc.id),1]
-	EndY2 <- track[(loc.id),2]
-	EndTime2 <- track[(loc.id),3]
-
-	Time2 <- EndTime2 - StartTime1 #make sure StartTime1 is still set
-	Alpha <- Time2 / TotalTime13
-	MeanXTime2 <- StartX1 + ((Alpha) * (EndX3 - StartX1))
-	MeanYTime2 <- StartY1 + ((Alpha) * (EndY3 - StartY1))
-	SqDist <- ((EndX2 - MeanXTime2) ^ 2) + ((EndY2 - MeanYTime2) ^ 2)
-	VarTime2 <- TotalTime13 * Alpha * (1 - Alpha) * sdbb ^ 2 + (((1 - Alpha) ^ 2) * (StartSTD1 ^ 2)) + ((Alpha ^ 2) * (EndSTD3 ^ 2)) #sdbb gets changed in this maximization routine
+	SqDist <- ((LocX2 - MeanXTime2) ^ 2) + ((LocY2 - MeanYTime2) ^ 2)
 	Loc.g.a <- (1 / (2 * pi * VarTime2)) * exp(-0.5 * (SqDist / VarTime2))
 	Loc.g.u <- Loc.g.a * wLoc / MapVolume
 	if(is.na(Loc.g.u)) { 
@@ -508,15 +398,16 @@ for (i in 1:length(cellgrid)) {
 		q()
 	} #Loc.g.u <- 10^-320} #~ need to check if we ever get 
 	if(Loc.g.u == 0) { Loc.g.u <- 10^-320}
-	LogLoc.g.u[i] <- ln(Loc.g.u)
+	LogLoc.g.u[i] <- log(Loc.g.u)
 	SumLogLik <- SumLogLik + LogLoc.g.u[i]
 
-'
   } #end loop through triplicates
+print("loglikelihood")
+print(SumLogLik)
 -2*SumLogLik
 }
 
-#get the area of the first square that's vertices are made by the first points
+#get the area of the first square thats vertices are made by the first points
 #in the data. The data should be spaced evenly for all points
 get.ma.gridsize <- function(ma) {
 	xdif <- ma$x[2] - ma$x[1]

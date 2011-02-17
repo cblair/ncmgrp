@@ -64,6 +64,7 @@ alfname = paste(workdir,"/",cluster,"_all_locations.txt",sep="")
 al = read.table(alfname, sep='\t',header=TRUE, as.is=TRUE)
 #ma setup
 ma.flist = unique(al$ExtentFile)
+
 #ma.flist = list.files(workdir,pattern=paste(cluster,"_master_avail*",sep=""))
 ma.list <- lapply(1:length(ma.flist), function(i) {
 	masterfname = paste(workdir,"/",ma.flist[i],sep="")
@@ -76,10 +77,11 @@ ma.list <- lapply(1:length(ma.flist), function(i) {
 #Process for each ma in the ma list
  
 #make one big ma for use in normalization
-ma.combined = ma.list[[1]]
+ma.combined <- ma.list[[1]]
 if(length(ma.list) > 1) {
 	for(i in 2:length(ma.list)) {ma.combined <- rbind(ma.combined, ma.list[[i]])}
 }
+
 
 #al normalize
 for(coln in names(al)) {
@@ -137,6 +139,7 @@ if(parallel) {
 cellgrid <- cellgrid[!is.na(cellgrid)]
 endtime <- proc.time()[3]
 print(paste("Cellgrid construction time was",endtime - starttime))
+
 
 ma.gridsize <- get.ma.gridsize(ma.combined) 
 

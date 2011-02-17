@@ -22,6 +22,7 @@ get.cellgrid <- function(i) {
 #experiment for Jon
 get.cellgrid.with.mas <- function(i) {
 	if(i %% 2 == 0) {
+		starttime <- proc.time()[3]
 		local.outlier <- FALSE
 		xsection <- c(al$x[i-1], al$x[i], al$x[i+1])
 		ysection <- c(al$y[i-1], al$y[i], al$y[i+1])
@@ -42,21 +43,21 @@ get.cellgrid.with.mas <- function(i) {
                 StartY1 <- al$y[i-1]
                 EndX3 <- al$x[i + 1]
                 EndY3 <- al$y[i + 1] 
-                StartSTD1 <- al$sd[i -1] 
+                StartSTD1 <- al$sd[i - 1] 
                 EndSTD3 <- al$sd[i + 1]
                 StartTime1 <- al$time[i - 1]
                 EndTime3 <- al$time[i + 1] 
                 TotalTime13 <- EndTime3 - StartTime1
-		Time2 <- al$time[i]
+		Time2 <- al$time[i] - al$time[i-1]
 
 		Alpha <- Time2 / TotalTime13
 		MeanXTime2 <- StartX1 + ((Alpha) * (EndX3 - StartX1))
                 MeanYTime2 <- StartY1 + ((Alpha) * (EndY3 - StartY1))
 		VarTime2 <- TotalTime13 * Alpha * (1 - Alpha) * (bbsd ^ 2) + ((1 - Alpha) ^ 2) * (StartSTD1 ^ 2) + (Alpha ^ 2) * (EndSTD3 ^ 2)
-		SDTime2 <- VarTime2 
+		SDTime2 <- sqrt(VarTime2)
 		CI99 <- 3 * SDTime2
-		#here, in the future, may be an option of changing 3
-
+		#^here, in the future, may be an option of changing 3
+		
 
 		newxmin <- MeanXTime2 - CI99
 		newxmax <- MeanXTime2 + CI99
@@ -67,7 +68,7 @@ get.cellgrid.with.mas <- function(i) {
 		if((al$x[i] > newxmax) || (al$x[i] < newxmin) 
 		|| (al$y[i] > newymax) || (al$y[i] < newymin)
 		) {
-			print("Middle location is outside of extent")
+			print(paste("Middle location",i," is outside of extent"))
 			local.outlier <- TRUE
 		}
 
@@ -89,9 +90,11 @@ get.cellgrid.with.mas <- function(i) {
 		ma.clip <- ma.clip[(ma.clip$x <= newxmax),]
 		ma.clip <- ma.clip[(ma.clip$y >= newymin),]
 		ma.clip <- ma.clip[(ma.clip$y <= newymax),]
+
 	
 		#get ma cellsize
 		ma.cellsize = max(abs(diff(ma.clip$x))) * max(abs(diff(ma.clip$y)))
+		#^fix this!
 
 		#create ma of Models
 		ma.melement <- data.frame()
@@ -107,7 +110,9 @@ get.cellgrid.with.mas <- function(i) {
         		return(ma.melement)
 		} ) 
 
-		print(paste("cellgrid",i,"done bin'ing"))
+		endtime <- proc.time()[3]
+		runtime <- endtime - starttime
+		#print(paste("cellgrid",i,"done bin'ing in ",runtime,"seconds"))
 		#cellgrid structure:
 		#	cellgrid[x][[1]] = triplicate properties
 		#			- $ma.name
