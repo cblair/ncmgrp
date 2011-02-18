@@ -309,7 +309,8 @@ AICc = AIC+(2*K*(K+1)/(length(track)-K-1))
           Neg2xLikelihood = mle.synbb$value,
           AICc = AICc,
           evalTime = difftime(etime,stime),
-          convergence=(mle.synbb$convergence==0), UseDistList)
+          #convergence=(mle.synbb$convergence==0), UseDistList)
+          convergence=(mle.synbb$convergence==0))
 
 }
 

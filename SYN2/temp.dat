@@ -182,7 +182,7 @@ Type 'q()' to quit R.
 > cellgrid <- cellgrid[!is.na(cellgrid)]
 > endtime <- proc.time()[3]
 > print(paste("Cellgrid construction time was",endtime - starttime))
-[1] "Cellgrid construction time was 13.587"
+[1] "Cellgrid construction time was 13.571"
 > 
 > 
 > ma.gridsize <- get.ma.gridsize(ma.combined) 
@@ -401,3 +401,68 @@ Type 'q()' to quit R.
 [1] -655.4606
 [1] "loglikelihood"
 [1] -655.4604
+[1] "loglikelihood"
+[1] -655.461
+[1] "loglikelihood"
+[1] -655.4604
+[1] "loglikelihood"
+[1] -655.4605
+[1] "loglikelihood"
+[1] -655.4604
+[1] "loglikelihood"
+[1] -655.4604
+[1] "loglikelihood"
+[1] -655.4605
+[1] "loglikelihood"
+[1] -655.4605
+[1] "loglikelihood"
+[1] -655.4607
+[1] "loglikelihood"
+[1] -655.4604
+[1] "loglikelihood"
+[1] -655.4604
+[1] "loglikelihood"
+[1] -655.4607
+[1] "mle.synbb"
+$par
+[1] 5.067504
+
+$value
+[1] 1310.921
+
+$counts
+function gradient 
+       6        6 
+
+$convergence
+[1] 0
+
+$message
+[1] "CONVERGENCE: REL_REDUCTION_OF_F <= FACTR*EPSMCH"
+
+$hessian
+         [,1]
+[1,] 365.1042
+
+[1] "TS57: SYNBB.fit"
+$parTable
+             Est         SE    Lower    Upper        Z P
+ln.sdbb 5.067504 0.07401276 4.922439 5.212569 68.46798 0
+
+$covmat
+            [,1]
+[1,] 0.005477889
+
+$Neg2xLikelihood
+[1] 1310.921
+
+$AICc
+[1] 1312.931
+
+$evalTime
+Time difference of 25.84020 mins
+
+$convergence
+[1] TRUE
+
+[1] "TS169"
