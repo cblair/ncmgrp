@@ -14,7 +14,7 @@ syn <- function(al) {
 	CovarColNames <- c(colnames(al[!colnames(al) %in% RequiredVars]))
 	PrevSYNBBParamEsts = array(0,(length(CovarColNames))) 
 	names(PrevSYNBBParamEsts) = CovarColNames
-	
+	SYNBB.fit <- data.frame()
 	#for synbb mode:
 	for (k in 1:length(ModelsList)){
 		#print(ModelsList[[k]])
@@ -28,30 +28,42 @@ syn <- function(al) {
 		# Get initial parameter values
 		#print(ncol(CurrentTrack))
 		ThetaW = c(rep(0, (ncol(CurrentTrack)-4)))	#Initial RSF coeff. set to 0; no selection 
+		print("TS31")
+		print(ThetaW)
 		if (k==1){
 			#get initial bb standard
 			bbsd = sqrt(bb.var)
 			#print("TSxxx")
 		} else { #==> use estimated parameters of previous models (if they exist) for initial values
 			#get new estimate of bb.var
+			print("TS42")
+			#ThetaW <- array(0,(length(colnames(CurrentTrack))))
+			ThetaW <- c()
+			for(name in colnames(CurrentTrack)) {
+				print(paste("TS44:",PrevSYNBBParamEsts[name]))
+				if(!is.na(PrevSYNBBParamEsts[name])) {
+					ThetaW <- c(ThetaW, PrevSYNBBParamEsts[name][[1]])
+				}
+			}
+			#ThetaW <- c(ThetaW[1:length(ThetaW)])
+			print("TS37:")
+			print(head(CurrentTrack))
+			print(ThetaW)
 			bbsd = exp(SYNBB.fit$partable[1,1])
-			names(ThetaW) = colnames(Track)
-			for (i in 1:length(PrevSYNBBParamEsts)){
-				for (j in 1:length(ThetaW)){
-					if(names(PrevSYNBBParamEsts)[i]==names(ThetaW)[j]){
-					ThetaW[j]=PrevSYNBBParamEsts[i]
-	   				} #end if 
-  				} #end ThetaW loop
- 			} #end PrevSYNBBParamEsts loop
+			#names(ThetaW) = colnames(Track)
+			#names(ThetaW) = colnames(Track)
+			#names(ThetaW) = colnames(CurrentTrack[,1:2])			
 		} #end if
+
+		print("TS58")
+		print(ThetaW)
 
 		lnbbsd = log(bbsd)
 		paramSYNBB = c(lnbbsd, ThetaW)
-
-		print("TS51: start.val")
+		
+		print("TS61: start.val")
 		print(paramSYNBB)
-
-		SYNBB.fit = synbbfit(CurrentTrack,start.val=paramSYNBB, k=k)
+		SYNBB.fit <- synbbfit(CurrentTrack,start.val=paramSYNBB, k=k)
 		#change sbvnle to synbble, names only
 
 		print("TS57: SYNBB.fit")
@@ -62,9 +74,10 @@ syn <- function(al) {
 
 		#Transform back parameter estimates for sdbb
 		print("TS169")
-		UnTransSYNBB.fit = SYNBB.fit
-		UnTransSYNBB.fit$parTable[1,1:4]=exp(SYNBB.fit$parTable[1,1:4])
-		rownames(UnTransSYNBB.fit$parTable)[1]="sdbb"
+		#UnTransSYNBB.fit = SYNBB.fit
+		#UnTransSYNBB.fit$parTable[1,1:4]=exp(SYNBB.fit$parTable[1,1:4])
+		#UnTransSYNBB.fit$parTable[1,2:5]=exp(SYNBB.fit$parTable[1,2:5])
+		#rownames(UnTransSYNBB.fit$parTable)[1]="sdbb"
 #print(ma)
 		#Write output probability file to working directory
 		'

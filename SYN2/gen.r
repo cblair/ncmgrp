@@ -32,9 +32,9 @@ Hessian = T
   z = mle.sep$par/se
   p.val = 2*(1-pnorm(abs(z)))
  
-  parTable = cbind(Est = mle.sep$par, SE = se, Lower=mle.sep$par-1.96*se,
+  partable = cbind(Est = mle.sep$par, SE = se, Lower=mle.sep$par-1.96*se,
               Upper=mle.sep$par+1.96*se, Z=z, P = p.val)
-  dimnames(parTable)[[1]] = c('mu.x','mu.y','ln.scale','ln.shape', colnames(habmat)[-c(1:2)])
+  dimnames(partable)[[1]] = c('mu.x','mu.y','ln.scale','ln.shape', colnames(habmat)[-c(1:2)])
 
 #----------------------------------------------------------------------------------------
 #Calculate probability of use distribution
@@ -134,7 +134,7 @@ AIC = mle.sep$value + 2*K
 AICc = AIC+(2*K*(K+1)/(length(track)-K-1))
 
 #Return a list of results
-    list(parTable=(parTable),
+    list(partable=(partable),
           covmat = 2*ginv(mle.sep$hessian),
           Neg2xLikelihood = mle.sep$value,
 	    AICc = AICc,
@@ -293,9 +293,9 @@ Hessian = T
   }       
   z = mle.synbb$par/se
   p.val = 2*(1-pnorm(abs(z)))
-  parTable = cbind(Est = mle.synbb$par, SE = se, Lower=mle.synbb$par-1.96*se,
+  partable = cbind(Est = mle.synbb$par, SE = se, Lower=mle.synbb$par-1.96*se,
               Upper=mle.synbb$par+1.96*se, Z=z, P = p.val)
-  dimnames(parTable)[[1]] = c('ln.sdbb', colnames(track)[-c(1:4)]) #fix for use on colnames instead
+  dimnames(partable)[[1]] = c('ln.sdbb', colnames(track)[-c(1:4)]) #fix for use on colnames instead
 #----------------------------------------------------------------------------------------
 #Calculate probability of use distribution
 
@@ -304,7 +304,7 @@ AIC = mle.synbb$value + 2*K
 AICc = AIC+(2*K*(K+1)/(length(track)-K-1))
 
 #Return a list of results
-    list(parTable=(parTable),
+    list(partable=(partable),
           covmat = 2*ginv(mle.synbb$hessian),
           Neg2xLikelihood = mle.synbb$value,
           AICc = AICc,
@@ -377,8 +377,15 @@ for (i in 1:length(cellgrid)) {
 			wMap <- exp(habmat[,3] * paramSYNBB[2])
 			wLoc <- exp(track[loc.id,5] * paramSYNBB[2])
 		} else {
-			wMap <- exp(habmat[,3:ncol(habmat)] %*% paramSYNBB[2:length(paramSYNBB)])
+			print("TS380")
+			print(ncol(habmat))
+			print(head(habmat[,5:6]))
+			print(paramSYNBB[2:length(paramSYNBB)])
+			#wMap <- exp(habmat[,3:ncol(habmat)] %*% paramSYNBB[2:length(paramSYNBB)])
+			#wLoc <- exp(track[loc.id,5:ncol(track)]) %*% paramSYNBB[2:length(paramSYNBB)]	
+			wMap <- exp(habmat[,5:ncol(habmat)] %*% paramSYNBB[2:length(paramSYNBB)])
 			wLoc <- exp(track[loc.id,5:ncol(track)]) %*% paramSYNBB[2:length(paramSYNBB)]
+
 		}
 	}
 	
