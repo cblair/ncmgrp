@@ -274,7 +274,16 @@ stime = Sys.time()
 #If problems during optimization occur, try a different optimization method
 
 #mle.sep = optim(start.val, sepLogLik, method = "Nelder-Mead",hessian = TRUE, track =track,AvailList=AvailList,control=list(maxit=500, reltol = .00001))
-mle.synbb = optim(start.val, synbbLogLik, method = "L-BFGS-B", lower = lbounds, upper=ubounds,hessian = TRUE, track = track,k=k,control=list(maxit=100))
+print("TS277")
+print(start.val)
+
+#methods = "Nelder-Mead", "BFGS", "CG", "L-BFGS-B", "SANN"
+#mle.synbb = optim(start.val, synbbLogLik, method = "L-BFGS-B", lower = lbounds, upper=ubounds,hessian = TRUE, track = track,k=k,control=list(maxit=100))
+#mle.synbb = optim(start.val, synbbLogLik, method = "L-BFGS-B",hessian = TRUE, track = track,k=k,control=list(maxit=100))
+mle.synbb = optim(start.val, synbbLogLik, method = "BFGS",hessian = TRUE, track = track,k=k,control=list(maxit=100))
+
+
+
 #mle.synbb = optim(start.val, sbvnLogLik, method = "BFGS", lower = lbounds, upper=ubounds,hessian = TRUE, track = track,AvailList=AvailList,control=list(maxit=100))
 #mle.sep = optim(start.val, sepLogLik, method = "SANN",hessian = TRUE, track =track,AvailList=AvailList,control=list(maxit=26, reltol = .00001))
 
@@ -325,7 +334,8 @@ synbbLogLik = function(paramSYNBB, track, k)
 
 #taking the cellsize from the first cellgrid, they should be all the same
 #cellsize <- cellgrid[1][[1]][[1]]$ma.cellsize 
-cellsize <- 900 #fix this!
+#cellsize <- 900 #fix this!
+cellsize <- 625 #fix this!
 
 SumLogLik = 0
 LogLoc.g.u=array(0,nrow(track)) #i
@@ -377,14 +387,15 @@ for (i in 1:length(cellgrid)) {
 			wMap <- exp(habmat[,3] * paramSYNBB[2])
 			wLoc <- exp(track[loc.id,5] * paramSYNBB[2])
 		} else {
-			print("TS380")
-			print(ncol(habmat))
-			print(head(habmat[,5:6]))
-			print(paramSYNBB[2:length(paramSYNBB)])
+			#print("TS380")
+			#print(ncol(habmat))
+			#print(length(paramSYNBB))
+			#print("TS383")
+			#print(head(c(0,0) * habmat[,3:ncol(habmat)]))
 			#wMap <- exp(habmat[,3:ncol(habmat)] %*% paramSYNBB[2:length(paramSYNBB)])
 			#wLoc <- exp(track[loc.id,5:ncol(track)]) %*% paramSYNBB[2:length(paramSYNBB)]	
-			wMap <- exp(habmat[,5:ncol(habmat)] %*% paramSYNBB[2:length(paramSYNBB)])
-			wLoc <- exp(track[loc.id,5:ncol(track)]) %*% paramSYNBB[2:length(paramSYNBB)]
+			wMap <- exp(habmat[,3:ncol(habmat)] * paramSYNBB[2:length(paramSYNBB)])
+			wLoc <- exp(track[loc.id,5:ncol(track)]) * paramSYNBB[2:length(paramSYNBB)]
 
 		}
 	}
@@ -395,22 +406,47 @@ for (i in 1:length(cellgrid)) {
 	#print(paste("trip:",i))
 	#print("MapVolume")
 	#print(MapVolume)
+	#print("wMap")
+	#print(wMap)
+	#print("wLoc")
+	#print(wLoc)
 
 	#calculate log likelihood at middle location
 	
+	for(col in 1:length(wLoc)) {
+		#print("TS420")
+		#print(wLoc[col])
+		#print(wLoc)
+		#q()
+		if(wLoc[col] == 0) {
+			wLoc[col] <- .01
+		}
+		#print("TS427")
+		#print(wLoc)
+	}
 	SqDist <- ((LocX2 - MeanXTime2) ^ 2) + ((LocY2 - MeanYTime2) ^ 2)
 	Loc.g.a <- (1 / (2 * pi * VarTime2)) * exp(-0.5 * (SqDist / VarTime2))
-	Loc.g.u <- Loc.g.a * wLoc / MapVolume
+	Loc.g.u <- (Loc.g.a * wLoc) / MapVolume
+	#print("TS430")
+	#print((Loc.g.a * wLoc) / MapVolume)
+
 	if(is.na(Loc.g.u)) { 
-		print("Loc.g.u was na. ??")
+		#print("Loc.g.u was na. ??")
 		q()
 	} #Loc.g.u <- 10^-320} #~ need to check if we ever get 
-	if(Loc.g.u == 0) { Loc.g.u <- 10^-320}
+	for(col in 1:length(Loc.g.u)) {
+		if(Loc.g.u[col] < 0.0000000001) {
+			Loc.g.u[col] <- .01
+		}
+	}
 	LogLoc.g.u[i] <- log(Loc.g.u)
 	SumLogLik <- SumLogLik + LogLoc.g.u[i]
-
+	#print("SumLogLik")
+	#print(SumLogLik)
+	#print("Loc.g.u")
+	#print(log(Loc.g.u))
   } #end loop through triplicates
-print("loglikelihood")
+print(paste("loglikelihood for model",k))
 print(SumLogLik)
 -2*SumLogLik
 }

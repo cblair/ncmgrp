@@ -67,7 +67,7 @@ syn <- function(al) {
 		#change sbvnle to synbble, names only
 
 		print("TS57: SYNBB.fit")
-		print(SYNBB.fit)
+		print(SYNBB.fit[1])
 
 		#PrevBVNParamEsts[rownames(SBVN.fit$parTable)]=SBVN.fit$parTable[rownames(SBVN.fit$parTable),1]
 		PrevSYNBBParamEsts[rownames(SYNBB.fit$parTable)]=SYNBB.fit$parTable[rownames(SYNBB.fit$parTable),1]
@@ -78,7 +78,18 @@ syn <- function(al) {
 		#UnTransSYNBB.fit$parTable[1,1:4]=exp(SYNBB.fit$parTable[1,1:4])
 		#UnTransSYNBB.fit$parTable[1,2:5]=exp(SYNBB.fit$parTable[1,2:5])
 		#rownames(UnTransSYNBB.fit$parTable)[1]="sdbb"
-#print(ma)
+		print("TS169")
+		print(SYNBB.fit$partable)
+		#UnTransSYNBB.fit = SYNBB.fit$parTable[1,1:4]
+		print("TSL67")
+		#print(UnTransSYNBB.fit)
+		print("wtf")
+		UnTransSYNBB.fit=exp(SYNBB.fit$partable)
+		print("TSL71")
+		print(UnTransSYNBB.fit)
+		print("TSL73")
+		#rowname(UnTransSYNBB.fit[1])="sdbb"
+		print(UnTransSYNBB.fit)
 		#Write output probability file to working directory
 		'
 		for (i in 1:length(CurrentAList)){
