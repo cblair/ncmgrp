@@ -333,9 +333,10 @@ synbbLogLik = function(paramSYNBB, track, k)
 #Calculate volume under non-normalized use function
 
 #taking the cellsize from the first cellgrid, they should be all the same
-#cellsize <- cellgrid[1][[1]][[1]]$ma.cellsize 
+cellsize <- cellgrid[1][[1]][[1]]$ma.cellsize 
 #cellsize <- 900 #fix this!
-cellsize <- 625 #fix this!
+#cellsize <- 625 #fix this!
+print(paste("cellsize: ",cellsize))
 
 SumLogLik = 0
 LogLoc.g.u=array(0,nrow(track)) #i
@@ -402,6 +403,8 @@ for (i in 1:length(cellgrid)) {
 	
 	MapNonNorm.g.u <- Map.g.a[,3] * wMap
 	MapVolume <- sum(MapNonNorm.g.u * cellsize)
+
+	global.Map.g.a <<- Map.g.a
 
 	#print(paste("trip:",i))
 	#print("MapVolume")

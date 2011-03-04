@@ -91,6 +91,7 @@ syn <- function(al) {
 		#rowname(UnTransSYNBB.fit[1])="sdbb"
 		print(UnTransSYNBB.fit)
 		#Write output probability file to working directory
+		print(global.Map.g.a)
 		'
 		for (i in 1:length(CurrentAList)){
 			extentfile = names(AvailFileNames[i])

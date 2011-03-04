@@ -93,8 +93,7 @@ get.cellgrid.with.mas <- function(i) {
 
 	
 		#get ma cellsize
-		ma.cellsize = max(abs(diff(ma.clip$x))) * max(abs(diff(ma.clip$y)))
-		#^fix this!
+		ma.cellsize = max(diff(abs(ma.clip$x))) * max(abs(diff(ma.clip$y)))
 
 		#create ma of Models
 		ma.melement <- data.frame()

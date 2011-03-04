@@ -59,6 +59,7 @@ Rprof(profile.fname)
 
 #################################################
 #Setup data
+global.Map.g.a <- matrix()
 alfname = paste(workdir,"/",cluster,"_all_locations.txt",sep="")
 #al = all locations
 al = read.table(alfname, sep='\t',header=TRUE, as.is=TRUE)
