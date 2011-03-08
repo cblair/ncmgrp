@@ -74,17 +74,15 @@ syn <- function(al) {
 
 		#Transform back parameter estimates for sdbb
 		print("TS169")
-		#UnTransSYNBB.fit = SYNBB.fit
-		#UnTransSYNBB.fit$parTable[1,1:4]=exp(SYNBB.fit$parTable[1,1:4])
-		#UnTransSYNBB.fit$parTable[1,2:5]=exp(SYNBB.fit$parTable[1,2:5])
 		#rownames(UnTransSYNBB.fit$parTable)[1]="sdbb"
 		print("TS169")
-		print(SYNBB.fit$partable)
+		print(SYNBB.fit)
 		#UnTransSYNBB.fit = SYNBB.fit$parTable[1,1:4]
 		print("TSL67")
 		#print(UnTransSYNBB.fit)
 		print("wtf")
-		UnTransSYNBB.fit=exp(SYNBB.fit$partable)
+		UnTransSYNBB.fit = SYNBB.fit
+		UnTransSYNBB.fit$partable[1,1:4] = exp(SYNBB.fit$partable[1,1:4])
 		print("TSL71")
 		print(UnTransSYNBB.fit)
 		print("TSL73")
@@ -92,6 +90,8 @@ syn <- function(al) {
 		print(UnTransSYNBB.fit)
 		#Write output probability file to working directory
 		print(global.Map.g.a)
+		write.table(UnTransSYNBB.fit$partable,paste("partable_",k,".out",sep=""))
+		write.table(UnTransSYNBB.fit$AICc,paste("aicc_",k,".out",sep=""))
 		'
 		for (i in 1:length(CurrentAList)){
 			extentfile = names(AvailFileNames[i])
