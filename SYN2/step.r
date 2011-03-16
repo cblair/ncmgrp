@@ -22,7 +22,7 @@ get.cellgrid <- function(i) {
 #experiment for Jon
 get.cellgrid.with.mas <- function(i) {
 	if(i %% 2 == 0) {
-		starttime <- proc.time()[3]
+		stime <- proc.time()[3]
 		local.outlier <- FALSE
 		xsection <- c(al$x[i-1], al$x[i], al$x[i+1])
 		ysection <- c(al$y[i-1], al$y[i], al$y[i+1])
@@ -109,9 +109,14 @@ get.cellgrid.with.mas <- function(i) {
         		return(ma.melement)
 		} ) 
 
-		endtime <- proc.time()[3]
-		runtime <- endtime - starttime
-		#print(paste("cellgrid",i,"done bin'ing in ",runtime,"seconds"))
+		etime <- proc.time()[3]
+		runtime <- etime - stime
+		runtime_sec <- runtime * (nrow(al) / 2)
+		runtime_min <- runtime_sec / 60
+		if( i == 2 ) {
+			print(paste('Building first cell took',runtime,'seconds'))
+			print(paste('Building cellgrids will take',runtime_sec,'seconds, ',runtime_min,'minutes'))
+		}
 		#cellgrid structure:
 		#	cellgrid[x][[1]] = triplicate properties
 		#			- $ma.name

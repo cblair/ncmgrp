@@ -280,7 +280,10 @@ print(start.val)
 #methods = "Nelder-Mead", "BFGS", "CG", "L-BFGS-B", "SANN"
 #mle.synbb = optim(start.val, synbbLogLik, method = "L-BFGS-B", lower = lbounds, upper=ubounds,hessian = TRUE, track = track,k=k,control=list(maxit=100))
 #mle.synbb = optim(start.val, synbbLogLik, method = "L-BFGS-B",hessian = TRUE, track = track,k=k,control=list(maxit=100))
-mle.synbb = optim(start.val, synbbLogLik, method = "BFGS",hessian = TRUE, track = track,k=k,control=list(maxit=100))
+
+maxit <- 100
+#mle.synbb = optim(start.val, synbbLogLik, method = "BFGS",hessian = TRUE, track = track,k=k,control=list(maxit=100))
+mle.synbb = optim(start.val, synbbLogLik, method = "BFGS",hessian = TRUE, track = track,k=k,maxit=maxit,control=list(maxit=maxit))
 
 
 
@@ -325,10 +328,12 @@ AICc = AIC+(2*K*(K+1)/(length(track)-K-1))
 
 # =======================================================================================
 # Likelihood Function
-synbbLogLik = function(paramSYNBB, track, k)
+synbbLogLik = function(paramSYNBB, track, k,maxit)
 {
-  sdbb = exp(paramSYNBB[1])
+#for time est.
+stime <- proc.time()[3]
 
+sdbb = exp(paramSYNBB[1])
 
 #Calculate volume under non-normalized use function
 
@@ -340,7 +345,6 @@ print(paste("cellsize: ",cellsize))
 
 SumLogLik = 0
 LogLoc.g.u=array(0,nrow(track)) #i
-
 
 for (i in 1:length(cellgrid)) {
 	habmat = cellgrid[i][[1]][[2]][[k]] #clip by current triplicate
@@ -367,7 +371,6 @@ for (i in 1:length(cellgrid)) {
 	MeanYTime2 <- StartY1 + ((Alpha) * (EndY3 - StartY1))
 	VarTime2 <- TotalTime13 * Alpha * (1 - Alpha) * sdbb ^ 2 + (((1 - Alpha) ^ 2) * (StartSTD1 ^ 2)) + ((Alpha ^ 2) * (EndSTD3 ^ 2)) #sdbb gets changed in this maximization routine
 	
-	starttime <- proc.time()[3]
 	for(j in 1:nrow(habmat)) {
 		SqDist <- ((habmat[j,1] - MeanXTime2) ^ 2) + ((habmat[j,2] - MeanYTime2) ^ 2)
 		PDFTime2 <- (1 / (2 * pi * VarTime2)) * exp(-0.5 * (SqDist / VarTime2))
@@ -375,9 +378,6 @@ for (i in 1:length(cellgrid)) {
 		Map.g.a[j,1] <<- habmat[j,1]
 		Map.g.a[j,2] <<- habmat[j,2]
 	}
-	endtime <- proc.time()[3]
-	runtime <- endtime - starttime
-	#print(paste("Calculated Map.g.a in",runtime,"seconds"))
 
 	if(length(paramSYNBB) == 1) {
 		wMap <- 1
@@ -449,6 +449,11 @@ for (i in 1:length(cellgrid)) {
 	#print("Loc.g.u")
 	#print(log(Loc.g.u))
   } #end loop through triplicates
+
+etime <- proc.time()[3]
+runtime <- etime - stime
+print(paste("Model",k,"runtime - ",runtime * maxit," seconds,",(runtime * maxit) / 60, "minutes"))
+
 print(paste("loglikelihood for model",k))
 print(SumLogLik)
 -2*SumLogLik
