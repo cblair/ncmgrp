@@ -41,6 +41,8 @@ get.cellgrid.with.mas <- function(i) {
 		bbsd = sqrt(bb.var) 
 		StartX1 <- al$x[i - 1]
                 StartY1 <- al$y[i-1]
+		LocX2 <- al$x[i]
+		LocY2 <- al$y[i]
                 EndX3 <- al$x[i + 1]
                 EndY3 <- al$y[i + 1] 
                 StartSTD1 <- al$sd[i - 1] 
@@ -109,6 +111,18 @@ get.cellgrid.with.mas <- function(i) {
         		return(ma.melement)
 		} ) 
 
+		#set Map.g.a
+		habmat <- ma.mlist[[1]] #doesn't matter which habmat is here
+		Map.g.a <<- matrix(0,nrow=nrow(habmat),ncol=3)
+		for(j in 1:nrow(habmat)) {
+			SqDist <- ((habmat[j,1] - MeanXTime2) ^ 2) + ((habmat[j,2] - MeanYTime2) ^ 2)
+			PDFTime2 <- (1 / (2 * pi * VarTime2)) * exp(-0.5 * (SqDist / VarTime2))
+			Map.g.a[j,3] <<- PDFTime2
+			Map.g.a[j,1] <<- habmat[j,1]
+			Map.g.a[j,2] <<- habmat[j,2]
+		}
+		
+
 		etime <- proc.time()[3]
 		runtime <- etime - stime
 		runtime_sec <- runtime * (nrow(al) / 2)
@@ -124,7 +138,8 @@ get.cellgrid.with.mas <- function(i) {
 		#			- $outlier - if 2nd location was out of extent
 		#	cellgrid[x][[2]] = this cellgrid cell's ma values 
 		#	cellgrid[x][[3]] = triplicate info dataframe from the location dataframe
-		return(list(data.frame(ma.name=ma.name, ma.cellsize=ma.cellsize,outlier=local.outlier), ma.mlist, as.data.frame(rbind(al[i - 1,], al[i,], al[i + 1,]))))
+		#	cellgrid[x][[4]] = Map.g.a
+		return(list(data.frame(ma.name=ma.name, ma.cellsize=ma.cellsize,outlier=local.outlier,LocX2=LocX2,MeanXTime2=MeanXTime2,LocY2=LocY2,MeanYTime2=MeanYTime2,VarTime2), ma.mlist, as.data.frame(rbind(al[i - 1,], al[i,], al[i + 1,])),Map.g.a))
 	}
 	return(NA)
 }#end function
