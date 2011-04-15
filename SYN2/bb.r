@@ -1,4 +1,4 @@
-bb <- function(locs, bb.var) {
+bb <- function(locs, bb.var, parallel) {
 # Convert time to Julian 
 #locs$Date =  as.Date(locs$Date, "%m/%d/%Y")
 #tmp = unlist(strsplit(locs$Hour, ":"))
@@ -27,7 +27,7 @@ bb <- function(locs, bb.var) {
 #
 #-------------------------------------------------------------------
 
-BrownianBridge <- function(X, Y, Time, LocationError, cell.size=50){
+BrownianBridge <- function(X, Y, Time, LocationError, cell.size=25,bb.var){
     options(digits=20)
 
     max.lag = abs(min(diff(Time))+1)
@@ -82,6 +82,7 @@ BrownianBridge <- function(X, Y, Time, LocationError, cell.size=50){
     }
 
     #BMvar = nlminb(start=10000, likelihood, lower=10)$par
+print(bb.var)
     BMvar = nlminb(start=bb.var, likelihood, lower=10)$par
     #cat("Brownian Motion Variance (meters^2) =", round(BMvar), 
     #    fill=TRUE)
@@ -94,8 +95,7 @@ BrownianBridge <- function(X, Y, Time, LocationError, cell.size=50){
 	probability = NULL
 	int = 0
 	#map
-	#intmap <- parLapply(c1, 1:(n.locs-1), function(i) {
-	intmap <- lapply(1:(n.locs-1), function(i) {
+	est.bb <- function(i) {
                 proctime1 = proc.time()
 		if(Time.Diff[i] <= max.lag){
 			theta = NULL
@@ -123,7 +123,11 @@ BrownianBridge <- function(X, Y, Time, LocationError, cell.size=50){
 		return(int)
 		}
 	    }
-	)
+	if(parallel) {
+		intmap <- parLapply(c1, 1:(n.locs-1), est.bb)
+	} else {
+		intmap <- lapply(1:(n.locs-1), est.bb)
+	}
 
 	#reduce
 	int = 0
@@ -167,12 +171,14 @@ BrownianBridge <- function(X, Y, Time, LocationError, cell.size=50){
 }
 
 # Create output ASCII file with probabilities (scaled so max=1000)
-density <- BrownianBridge(locs$x, locs$y, Time=locs$Julian,LocationError=20, cell.size=30)
+density <- BrownianBridge(locs$x, locs$y, Time=locs$time,LocationError=locs$sd, cell.size=25,bb.var=bb.var)
 bb = density
 if(length(bb) == 0) {return()}
 
-#bb$probability <- round(bb$probability*1000/max(bb$probability), 0)
-bb$probability <- bb$probability*1/max(bb$probability)
+bb$probability <- round(bb$probability*1000/max(bb$probability), 0)
+print("TS177")
+print(sum(bb$probability))
+print(bb)
 
 m <- data.frame(bb)
 
@@ -181,6 +187,7 @@ m <- SpatialPixelsDataFrame(points = m[c("x", "y")], data=m)
 m <- as(m, "SpatialGridDataFrame")
 
 writeAsciiGrid(m, paste(synbb.outfile,"_example_grid.asc", sep=""), attr=3)
+write(bb.var, paste(synbb.outfile,"_bbvar.dat", sep=""))
 #move rplots file to respective 
 #system(paste("mv Rplots.pdf ",cluster,"-",min(locs$x),"-",max(locs$x),"-",min(locs$y),"-",max(locs$y),"_rplots.pdf", sep=""))
 

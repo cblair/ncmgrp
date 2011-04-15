@@ -61,8 +61,31 @@ Rprof(profile.fname)
 #Setup data
 global.Map.g.a <- matrix()
 alfname = paste(workdir,"/",cluster,"_all_locations.txt",sep="")
+#alfname = paste(workdir,"/",cluster,"_foraging_1_all_locations.txt",sep="")
+#alfname = paste(workdir,"/",cluster,"_3hr__all_locations.txt",sep="")
+#alfname = paste(workdir,"/",cluster,"_30min_all_locations.txt",sep="")
+#alfname = paste(workdir,"/",cluster,"_10min_all_locations.txt",sep="")
+#alfname = paste(workdir,"/",cluster,"_lidar_all_locations.txt",sep="")
+
 #al = all locations
 al = read.table(alfname, sep='\t',header=TRUE, as.is=TRUE)
+print(paste("Processing",length(al$x),"locations"))
+
+bb.var <- get.bb.var(al) #bb variance
+
+#Process options
+#if(do.to.js || bb.only) {
+#	al$Julian <- al$time * 24 * 60 * 60
+#	al = al[order(al$Julian),]
+#}
+
+# run bb if bb.only
+if(bb.only) {
+	synbb.outfile = "bb"
+	bb(al,bb.var,parallel)
+	q()
+}
+
 #ma setup
 ma.flist = unique(al$ExtentFile)
 
@@ -123,7 +146,6 @@ source("models.r")
 
 #build cellgrid
 # calculate auxillary variables
-bb.var <- get.bb.var(al) #bb variance
 cellgrid <- list()
 print("Starting cellgrid construction...")
 starttime <- proc.time()[3]
@@ -141,16 +163,7 @@ cellgrid <- cellgrid[!is.na(cellgrid)]
 endtime <- proc.time()[3]
 print(paste("Cellgrid construction time was",endtime - starttime))
 
-
 ma.gridsize <- get.ma.gridsize(ma.combined) 
-
-
-#################################################
-#Process options
-if(do.to.js == TRUE) {
-	al$Julian <- al$time * 24 * 60 * 60
-	al = al[order(al$Julian),]
-}
 
 #else, we are doing bb and syn by triplicates
 synbb.outfile = "step"

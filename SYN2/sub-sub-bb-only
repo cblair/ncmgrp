@@ -1,0 +1,21 @@
+#!/bin/sh
+
+MODE=""
+NODES="-l walltime=99:99:99"
+PMODE=""
+if [ $# -lt 1 ] || [ $# -gt 2 ]; then
+	echo $#'Usage: sub-sub <cluster name> [nodes for parallely processing]'
+	exit 1
+fi
+if [ $# -eq 2 ]; then
+	CPUS=$2 #physical nodes
+	NODES=$((CPUS / 2))
+	#NODES="-pe orte $2"
+	NODES="-l nodes=$NODES:ppn=2,walltime=99:99:99" #qsub nodes
+fi
+
+JOBDATA=jobdata
+
+QSUB="qsub -N bb-$1 -o $JOBDATA/bb-$1.o -e $JOBDATA/bb-$1.e -v CLUSTER=$1,CPUS=\"$CPUS\" $NODES sub-bb-only.pbs-sge"
+echo $QSUB
+echo `$QSUB`

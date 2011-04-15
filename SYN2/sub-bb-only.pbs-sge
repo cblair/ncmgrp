@@ -6,7 +6,6 @@
 #PBS -m bea
 # -M well0358@vandals.uidaho.edu,cblair@vandals.uidaho.edu
 # -M cblair@vandals.uidaho.edu
-#PBS -l nodes=1:ppn=2,walltime=99:99:99
 
 #Active comments for SGE
 #$ -cwd
@@ -24,8 +23,8 @@ fi
 #module load openmpi
 module load R
 
-if [ "$MODE" == "" ]; then
-	R < synbb.r --no-save -c $CLUSTER #&> out.temp
+if [ "$CPUS" == "" ]; then
+	R < synbb.r --no-save --bb-only -c $CLUSTER #&> out.temp
 else
-	R < synbb.r --no-save -p $MODE -c $CLUSTER #&> out.temp
+	R < synbb.r --no-save --bb-only -p $CPUS -c $CLUSTER #&> out.temp
 fi

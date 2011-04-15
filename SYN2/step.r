@@ -96,6 +96,10 @@ get.cellgrid.with.mas <- function(i) {
 	
 		#get ma cellsize
 		ma.cellsize = max(diff(abs(ma.clip$x))) * max(abs(diff(ma.clip$y)))
+		if(ma.cellsize == Inf) {
+			print(paste("Location",i,"ma too small"))
+			return(NA)
+		}
 
 		#create ma of Models
 		ma.melement <- data.frame()
