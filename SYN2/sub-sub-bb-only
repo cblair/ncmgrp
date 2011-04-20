@@ -9,13 +9,13 @@ if [ $# -lt 1 ] || [ $# -gt 2 ]; then
 fi
 if [ $# -eq 2 ]; then
 	CPUS=$2 #physical nodes
-	NODES=$((CPUS / 2))
+	NODES=$((CPUS / 4))
 	#NODES="-pe orte $2"
-	NODES="-l nodes=$NODES:ppn=2,walltime=99:99:99" #qsub nodes
+	NODES="-l nodes=$NODES:ppn=4,walltime=99:99:99" #qsub nodes
 fi
 
 JOBDATA=jobdata
 
-QSUB="qsub -N bb-$1 -o $JOBDATA/bb-$1.o -e $JOBDATA/bb-$1.e -v CLUSTER=$1,CPUS=\"$CPUS\" $NODES sub-bb-only.pbs-sge"
+QSUB="qsub -N bb-$1-$CPUS -o $JOBDATA/bb-$1.o -e $JOBDATA/bb-$1.e -v CLUSTER=$1,CPUS=\"$CPUS\" $NODES sub-bb-only.pbs-sge"
 echo $QSUB
 echo `$QSUB`

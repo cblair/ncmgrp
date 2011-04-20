@@ -351,7 +351,6 @@ for (i in 1:length(cellgrid)) {
 	loc.id <- i * 2
 	#now done in cellgrid!	
 	'
-	Map.g.a <<- matrix(0,nrow=nrow(habmat),ncol=3)
 
 	StartX1 <- track[(loc.id - 1),1]
 	StartY1 <- track[(loc.id - 1),2]
@@ -371,6 +370,7 @@ for (i in 1:length(cellgrid)) {
 	MeanYTime2 <- StartY1 + ((Alpha) * (EndY3 - StartY1))
 	VarTime2 <- TotalTime13 * Alpha * (1 - Alpha) * sdbb ^ 2 + (((1 - Alpha) ^ 2) * (StartSTD1 ^ 2)) + ((Alpha ^ 2) * (EndSTD3 ^ 2)) #sdbb gets changed in this maximization routine
 
+	Map.g.a <<- matrix(0,nrow=nrow(habmat),ncol=3)
 	for(j in 1:nrow(habmat)) {
 		SqDist <- ((habmat[j,1] - MeanXTime2) ^ 2) + ((habmat[j,2] - MeanYTime2) ^ 2)
 		PDFTime2 <- (1 / (2 * pi * VarTime2)) * exp(-0.5 * (SqDist / VarTime2))
@@ -379,12 +379,25 @@ for (i in 1:length(cellgrid)) {
 		Map.g.a[j,2] <<- habmat[j,2]
 	}
 	'
-	Map.g.a <- cellgrid[i][[1]][[4]]
+	Map.g.a <<- cellgrid[i][[1]][[4]]
 	LocX2 <- cellgrid[i][[1]][[1]]$LocX2
 	MeanXTime2 <- cellgrid[i][[1]][[1]]$MeanXTime2
 	LocY2 <- cellgrid[i][[1]][[1]]$LocY2
 	MeanYTime2 <- cellgrid[i][[1]][[1]]$MeanYTime2
-	VarTime2 <- cellgrid[i][[1]][[1]]$VarTime2
+	TotalTime13 <- cellgrid[i][[1]][[1]]$TotalTime13
+	Alpha <- cellgrid[i][[1]][[1]]$Alpha
+	StartSTD1 <- cellgrid[i][[1]][[1]]$StartSTD1
+	EndSTD3 <- cellgrid[i][[1]][[1]]$EndSTD3
+	#VarTime2 <- cellgrid[i][[1]][[1]]$VarTime2
+	VarTime2 <- TotalTime13 * Alpha * (1 - Alpha) * sdbb ^ 2 + (((1 - Alpha) ^ 2) * (StartSTD1 ^ 2)) + ((Alpha ^ 2) * (EndSTD3 ^ 2)) #sdbb gets changed in this maximization routine
+	
+	for(j in 1:nrow(habmat)) {
+		SqDist <- ((habmat[j,1] - MeanXTime2) ^ 2) + ((habmat[j,2] - MeanYTime2) ^ 2)
+		PDFTime2 <- (1 / (2 * pi * VarTime2)) * exp(-0.5 * (SqDist / VarTime2))
+		Map.g.a[j,3] <<- PDFTime2
+		Map.g.a[j,1] <<- habmat[j,1]
+		Map.g.a[j,2] <<- habmat[j,2]
+	}
 
 	if(length(paramSYNBB) == 1) {
 		wMap <- 1

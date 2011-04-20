@@ -83,6 +83,10 @@ bb.var <- get.bb.var(al) #bb variance
 if(bb.only) {
 	synbb.outfile = "bb"
 	bb(al,bb.var,parallel)
+	#close parallel ops
+	if(parallel == TRUE) {
+		stopCluster(c1)
+	}
 	q()
 }
 
@@ -132,6 +136,10 @@ for(i in 1:length(ma.list)) {
 	}
 }
 #end ma normalize
+
+#data colo check for al and ma
+colnames(al)
+colnames(ma.combined)
 
 #record what mins and maxes we used for normlization
 #x <- data.frame(min=(min(ma.combined)),max=(max(ma.combined)))

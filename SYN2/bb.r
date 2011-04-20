@@ -82,7 +82,6 @@ BrownianBridge <- function(X, Y, Time, LocationError, cell.size=25,bb.var){
     }
 
     #BMvar = nlminb(start=10000, likelihood, lower=10)$par
-print(bb.var)
     BMvar = nlminb(start=bb.var, likelihood, lower=10)$par
     #cat("Brownian Motion Variance (meters^2) =", round(BMvar), 
     #    fill=TRUE)
@@ -96,7 +95,7 @@ print(bb.var)
 	int = 0
 	#map
 	est.bb <- function(i) {
-                proctime1 = proc.time()
+                stime <- proc.time()[3]
 		if(Time.Diff[i] <= max.lag){
 			theta = NULL
 			tm = 0
@@ -113,13 +112,12 @@ print(bb.var)
 				tm = tm + 5
 
 			}
-                proctime2 <- proc.time()
-                runtime <- proctime2[2] - proctime1[2]
-                usertime <- proctime2[1] - proctime1[1]
-                #cat("Runtime: ")
-                #print(runtime)
-                #cat("User Time: ")
-                #print(usertime)
+                etime <- proc.time()[3]
+                runtime <- etime - stime
+                if(!parallel) {
+			print(paste("p =",runtime * n.locs))
+			print(paste("(1 - p) =",proc.time()[3]))
+		}
 		return(int)
 		}
 	    }
@@ -178,7 +176,6 @@ if(length(bb) == 0) {return()}
 bb$probability <- round(bb$probability*1000/max(bb$probability), 0)
 print("TS177")
 print(sum(bb$probability))
-print(bb)
 
 m <- data.frame(bb)
 

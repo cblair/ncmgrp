@@ -17,79 +17,50 @@ syn <- function(al) {
 	SYNBB.fit <- data.frame()
 	#for synbb mode:
 	for (k in 1:length(ModelsList)){
-		#print(ModelsList[[k]])
     		#delete columns (i.e., variables) in Track not used 
       		CurrentTrack=Track[,unique(c(RequiredVars,ModelsList[[k]]))] #keep x, y, time, sd
 		
-		#print(CurrentTrack)
-  		
 		#-----------------------------------------------------------------------------------
 		### Synoptic with brownian bridge
 		# Get initial parameter values
-		#print(ncol(CurrentTrack))
 		ThetaW = c(rep(0, (ncol(CurrentTrack)-4)))	#Initial RSF coeff. set to 0; no selection 
-		print("TS31")
-		print(ThetaW)
 		if (k==1){
 			#get initial bb standard
 			bbsd = sqrt(bb.var)
-			#print("TSxxx")
 		} else { #==> use estimated parameters of previous models (if they exist) for initial values
 			#get new estimate of bb.var
-			print("TS42")
 			#ThetaW <- array(0,(length(colnames(CurrentTrack))))
 			ThetaW <- c()
 			for(name in colnames(CurrentTrack)) {
-				print(paste("TS44:",PrevSYNBBParamEsts[name]))
 				if(!is.na(PrevSYNBBParamEsts[name])) {
 					ThetaW <- c(ThetaW, PrevSYNBBParamEsts[name][[1]])
 				}
 			}
 			#ThetaW <- c(ThetaW[1:length(ThetaW)])
-			print("TS37:")
-			print(head(CurrentTrack))
-			print(ThetaW)
 			bbsd = exp(SYNBB.fit$partable[1,1])
 			#names(ThetaW) = colnames(Track)
 			#names(ThetaW) = colnames(Track)
 			#names(ThetaW) = colnames(CurrentTrack[,1:2])			
 		} #end if
 
-		print("TS58")
-		print(ThetaW)
 
 		lnbbsd = log(bbsd)
 		paramSYNBB = c(lnbbsd, ThetaW)
 		
-		print("TS61: start.val")
-		print(paramSYNBB)
 		SYNBB.fit <- synbbfit(CurrentTrack,start.val=paramSYNBB, k=k)
 		#change sbvnle to synbble, names only
 
-		print("TS57: SYNBB.fit")
-		print(SYNBB.fit[1])
 
 		#PrevBVNParamEsts[rownames(SBVN.fit$parTable)]=SBVN.fit$parTable[rownames(SBVN.fit$parTable),1]
 		PrevSYNBBParamEsts[rownames(SYNBB.fit$parTable)]=SYNBB.fit$parTable[rownames(SYNBB.fit$parTable),1]
 
 		#Transform back parameter estimates for sdbb
-		print("TS169")
 		#rownames(UnTransSYNBB.fit$parTable)[1]="sdbb"
-		print("TS169")
-		print(SYNBB.fit)
 		#UnTransSYNBB.fit = SYNBB.fit$parTable[1,1:4]
-		print("TSL67")
-		#print(UnTransSYNBB.fit)
-		print("wtf")
 		UnTransSYNBB.fit = SYNBB.fit
 		UnTransSYNBB.fit$partable[1,1:4] = exp(SYNBB.fit$partable[1,1:4])
-		print("TSL71")
-		print(UnTransSYNBB.fit)
-		print("TSL73")
 		#rowname(UnTransSYNBB.fit[1])="sdbb"
-		print(UnTransSYNBB.fit)
 		#Write output probability file to working directory
-		print(global.Map.g.a)
 		write.table(UnTransSYNBB.fit$partable,paste("partable_",k,".out",sep=""))
 		write.table(UnTransSYNBB.fit$AICc,paste("aicc_",k,".out",sep=""))
 		'

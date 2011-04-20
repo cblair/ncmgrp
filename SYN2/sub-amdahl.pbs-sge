@@ -1,12 +1,14 @@
 #!/bin/sh
 
 #Active comments for PBS
-# -N step-bb-syn
+#PBS -N synbb-test
 #PBS -V    	
+#PBS -o jobdata/synbb-test.o
+#PBS -e jobdata/synbb-test.e
 #PBS -m bea
 # -M well0358@vandals.uidaho.edu,cblair@vandals.uidaho.edu
 # -M cblair@vandals.uidaho.edu
-# -l nodes=1:ppn=2,walltime=99:99:99
+#PBS -l nodes=3:ppn=4,walltime=99:99:99
 
 #Active comments for SGE
 #$ -cwd
@@ -24,8 +26,4 @@ fi
 #module load openmpi
 module load R
 
-if [ "$MODE" == "" ]; then
-	R < synbb.r --no-save -c $CLUSTER #&> out.temp
-else
-	R < synbb.r --no-save -p $MODE -c $CLUSTER #&> out.temp
-fi
+R < amdahl.r --no-save -p $PVAL #&> out.temp
