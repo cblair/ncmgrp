@@ -3,10 +3,10 @@
 #Active comments for PBS
 # -N step-bb-syn
 #PBS -V    	
-#PBS -m bea
+# -m ea
 # -M well0358@vandals.uidaho.edu,cblair@vandals.uidaho.edu
 # -M cblair@vandals.uidaho.edu
-# -l nodes=1:ppn=2,walltime=99:99:99
+#PBS -l nodes=1:ppn=4,walltime=99:99:99
 
 #Active comments for SGE
 #$ -cwd
@@ -25,7 +25,7 @@ fi
 module load R
 
 if [ "$MODE" == "" ]; then
-	R < synbb.r --no-save -c $CLUSTER #&> out.temp
+	time R < synbb.r --slave -c $CLUSTER #&> out.temp
 else
-	R < synbb.r --no-save -p $MODE -c $CLUSTER #&> out.temp
+	time R < synbb.r --slave -p $MODE -c $CLUSTER #&> out.temp
 fi
