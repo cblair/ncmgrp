@@ -56,4 +56,4 @@ o <- sgtime / total.time
 print(paste("p proportion :",p))
 print(paste("o proportion :",o))
 
-print.amdahl(160,o,p)
+print.amdahl(1600,o,p)

@@ -57,9 +57,11 @@ get.cellgrid.with.mas <- function(i) {
                 MeanYTime2 <- StartY1 + ((Alpha) * (EndY3 - StartY1))
 		VarTime2 <- TotalTime13 * Alpha * (1 - Alpha) * (bbsd ^ 2) + ((1 - Alpha) ^ 2) * (StartSTD1 ^ 2) + (Alpha ^ 2) * (EndSTD3 ^ 2)
 		SDTime2 <- sqrt(VarTime2)
-		CI99 <- 3 * SDTime2
+		#CI99 <- 3 * SDTime2
 		#^here, in the future, may be an option of changing 3
-		
+		#the future is here!AGW 5/16/11 to check if size of CI99 is driving delta AIC similarities
+		#CI99 <- 9 * SDTime2	
+		CI99 <- 81 * SDTime2
 
 		newxmin <- MeanXTime2 - CI99
 		newxmax <- MeanXTime2 + CI99

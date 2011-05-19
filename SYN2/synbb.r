@@ -55,7 +55,7 @@ setwd(workdir)
 #################################################
 #Profiling for performance
 profile.fname = paste(workdir,"/profile.dat", sep="")
-Rprof(profile.fname)
+#Rprof(profile.fname)
 
 #################################################
 #Setup data
@@ -141,9 +141,21 @@ for(i in 1:length(ma.list)) {
 colnames(al)
 colnames(ma.combined)
 
-#record what mins and maxes we used for normlization
-#x <- data.frame(min=(min(ma.combined)),max=(max(ma.combined)))
-#write.table(x,file="norm_data.r")
+#record what mins and maxes we used for normlization-edited by AGW 5/16/11
+#colmin <- c()
+#colmax <- c()
+#for(coln in names(ma.combined)){
+#	colmin <- c(colmin,min(ma.combined[,coln]))
+#	colmax <- c(colmax,max(ma.combined[,coln]))
+#}
+#
+#CoVarMinMax=(matrix(0,2,ncol(ma.list[[1]])))
+#CoVarMinMax[1,]=colmin
+#CoVarMinMax[2,]=colmax
+#colnames(CoVarMinMax)=names(ma.combined)
+#rownames(CoVarMinMax)=c("min","max")
+#data.frame(CoVarMinMax)
+#write.table (CoVarMinMax, file ="CoVar_MinMax.txt")
 
 #import habitat (ma) models
 source("models.r")
@@ -160,6 +172,8 @@ starttime <- proc.time()[3]
 if(parallel) {	
 	clusterExport(c1, "al")
 	clusterExport(c1, "ma.list")
+	clusterExport(c1, "bb.var")
+	clusterExport(c1, "ModelsList")
 	#cellgrid <- parLapply(c1, 1:length(al$x), get.cellgrid)
 	print("Starting par cellgrid construction")
 	cellgrid <- parLapply(c1, 1:length(al$x), get.cellgrid.with.mas)
@@ -170,6 +184,7 @@ if(parallel) {
 cellgrid <- cellgrid[!is.na(cellgrid)]
 endtime <- proc.time()[3]
 print(paste("Cellgrid construction time was",endtime - starttime))
+print(paste("Processing",length(cellgrid),"cellgrids"))
 
 ma.gridsize <- get.ma.gridsize(ma.combined) 
 

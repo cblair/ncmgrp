@@ -1,7 +1,8 @@
 #!/bin/sh
 
+TLIMIT="9999:99:99"
 MODE=""
-NODES="-l walltime=99:99:99"
+NODES="-l walltime=$TLIMIT"
 if [ $# -lt 1 ] || [ $# -gt 2 ]; then
 	echo $#'Usage: sub-sub <cluster name> [nodes for parallely processing]'
 	exit 1
@@ -10,11 +11,11 @@ if [ $# -eq 2 ]; then
 	CPUS=$2 #physical nodes
 	NODES=$((CPUS / 4))
 	#NODES="-pe orte $2"
-	NODES="-l nodes=$NODES:ppn=4,walltime=99:99:99" #qsub nodes
+	NODES="-l nodes=$NODES:ppn=4,walltime=$TLIMIT" #qsub nodes
 fi
 
 JOBDATA=jobdata
 
-QSUB="qsub -N step-$1 -o $JOBDATA/step-$1.o -e $JOBDATA/step-$1.e $PMODE -v CLUSTER=$1,CPUS=\"$CPUS\" $NODES sub.pbs-sge"
+QSUB="qsub -q inf -N step-$1 -o $JOBDATA/step-$1.o -e $JOBDATA/step-$1.e $PMODE -v CLUSTER=$1,CPUS=\"$CPUS\" $NODES sub.pbs-sge"
 echo $QSUB
 echo `$QSUB`

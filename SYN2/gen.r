@@ -258,6 +258,9 @@ SumLogLik = SumLogLik+LogLoc.g.u[i]
 -2*SumLogLik
 }
 
+#records optim results
+OPT.RESULTS <- c()
+
 ## Synoptic Brownian Bridge Model #######################################################
 synbbfit = function(track,start.val = NULL,k)
 {
@@ -281,10 +284,13 @@ print(start.val)
 #mle.synbb = optim(start.val, synbbLogLik, method = "L-BFGS-B", lower = lbounds, upper=ubounds,hessian = TRUE, track = track,k=k,control=list(maxit=100))
 #mle.synbb = optim(start.val, synbbLogLik, method = "L-BFGS-B",hessian = TRUE, track = track,k=k,control=list(maxit=100))
 
-maxit <- 100
+OPT.RESULTS <- c()
+maxit <- 20
 #mle.synbb = optim(start.val, synbbLogLik, method = "BFGS",hessian = TRUE, track = track,k=k,control=list(maxit=100))
-mle.synbb = optim(start.val, synbbLogLik, method = "BFGS",hessian = TRUE, track = track,k=k,maxit=maxit,control=list(maxit=maxit))
-
+#mle.synbb = optim(start.val, synbbLogLik, method = "BFGS",hessian = TRUE, track = track,k=k,maxit=maxit,control=list(maxit=maxit))
+mle.synbb = optim(start.val, synbbLogLik, method = "CG",hessian = TRUE, track = track,k=k,maxit=maxit,control=list(maxit=maxit,reltol = .01))
+print("TS289")
+print(OPT.RESULTS)
 
 
 #mle.synbb = optim(start.val, sbvnLogLik, method = "BFGS", lower = lbounds, upper=ubounds,hessian = TRUE, track = track,AvailList=AvailList,control=list(maxit=100))
@@ -328,11 +334,8 @@ AICc = AIC+(2*K*(K+1)/(length(track)-K-1))
 
 # =======================================================================================
 # Likelihood Function
-synbbLogLik = function(paramSYNBB, track, k,maxit)
+synbbLogLik = function(paramSYNBB, track, k,maxit,opt.results)
 {
-#for time est.
-stime <- proc.time()[3]
-
 sdbb = exp(paramSYNBB[1])
 
 #Calculate volume under non-normalized use function
@@ -344,9 +347,12 @@ print(paste("cellsize: ",cellsize))
 SumLogLik = 0
 LogLoc.g.u=array(0,nrow(track)) #i
 
-for (i in 1:length(cellgrid)) {
+#for time est.
+print(paste("(1 - p) ~=",proc.time()[3]))
+stime <- proc.time()[3]
+get.sum.log.liks <- function(i) {
+	lstime <- proc.time()[3]
 	habmat = cellgrid[i][[1]][[2]][[k]] #clip by current triplicate
-
 		
 	loc.id <- i * 2
 	#now done in cellgrid!	
@@ -391,6 +397,7 @@ for (i in 1:length(cellgrid)) {
 	#VarTime2 <- cellgrid[i][[1]][[1]]$VarTime2
 	VarTime2 <- TotalTime13 * Alpha * (1 - Alpha) * sdbb ^ 2 + (((1 - Alpha) ^ 2) * (StartSTD1 ^ 2)) + ((Alpha ^ 2) * (EndSTD3 ^ 2)) #sdbb gets changed in this maximization routine
 	
+	tsstime <- proc.time()[3]
 	for(j in 1:nrow(habmat)) {
 		SqDist <- ((habmat[j,1] - MeanXTime2) ^ 2) + ((habmat[j,2] - MeanYTime2) ^ 2)
 		PDFTime2 <- (1 / (2 * pi * VarTime2)) * exp(-0.5 * (SqDist / VarTime2))
@@ -447,7 +454,7 @@ for (i in 1:length(cellgrid)) {
 	#print((Loc.g.a * wLoc) / MapVolume)
 
 	if(is.na(Loc.g.u)) { 
-		#print("Loc.g.u was na. ??")
+		print("Loc.g.u was na. ??")
 		q()
 	} #Loc.g.u <- 10^-320} #~ need to check if we ever get 
 	for(col in 1:length(Loc.g.u)) {
@@ -456,6 +463,12 @@ for (i in 1:length(cellgrid)) {
 		}
 	}
 	LogLoc.g.u[i] <- log(Loc.g.u)
+
+	letime <- proc.time()[3]
+	lruntime <- letime - lstime
+	lruntime <- lruntime * length(cellgrid)
+	print(paste("p ~=",lruntime))
+
 	SumLogLik <- SumLogLik + LogLoc.g.u[i]
 	#print("SumLogLik")
 	#print(SumLogLik)
@@ -463,9 +476,18 @@ for (i in 1:length(cellgrid)) {
 	#print(log(Loc.g.u))
   } #end loop through triplicates
 
+if(parallel) {
+	print(paste("Getting SumLogLik in parallel"))
+	clusterExport(c1,"cellgrid")
+	SumLogLikVector <- unlist(parLapply(c1,1:length(cellgrid),get.sum.log.liks))
+} else {
+	SumLogLikVector <- unlist(lapply(1:length(cellgrid),get.sum.log.liks))
+}
+SumLogLik <- sum(SumLogLikVector)
 etime <- proc.time()[3]
 runtime <- etime - stime
-print(paste("Model",k,"runtime - ",runtime * maxit," seconds,",(runtime * maxit) / 60, "minutes"))
+print(paste("Model",k," estimated runtime - ",runtime * maxit," seconds,",(runtime * maxit) / 60, "minutes"))
+OPT.RESULTS <- OPT.RESULTS#,-2*SumLogLik)
 
 print(paste("loglikelihood for model",k))
 print(SumLogLik)
