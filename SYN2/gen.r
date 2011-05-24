@@ -345,7 +345,7 @@ cellsize <- cellgrid[1][[1]][[1]]$ma.cellsize
 print(paste("cellsize: ",cellsize))
 
 SumLogLik = 0
-LogLoc.g.u=array(0,nrow(track)) #i
+SumLoc.g.u=array(0,nrow(track)) #i
 
 #for time est.
 print(paste("(1 - p) ~=",proc.time()[3]))
@@ -415,16 +415,14 @@ get.sum.log.liks <- function(i) {
 			wMap <- exp(habmat[,3] * paramSYNBB[2])
 			wLoc <- exp(track[loc.id,5] * paramSYNBB[2])
 		} else {
-			wMap <- exp(habmat[,3:ncol(habmat)] * paramSYNBB[2:length(paramSYNBB)])
-			wLoc <- exp(track[loc.id,5:ncol(track)]) * paramSYNBB[2:length(paramSYNBB)]
+			wMap <- exp(sum(habmat[,3:ncol(habmat)] * paramSYNBB[2:length(paramSYNBB)]))
+			wLoc <- exp(sum(track[loc.id,5:ncol(track)] * paramSYNBB[2:length(paramSYNBB)]))
 
 		}
 	}
 	
 	MapNonNorm.g.u <- Map.g.a[,3] * wMap
 	MapVolume <- sum(MapNonNorm.g.u * cellsize)
-
-	global.Map.g.a <<- Map.g.a
 
 	#print(paste("trip:",i))
 	#print("MapVolume")
@@ -436,40 +434,30 @@ get.sum.log.liks <- function(i) {
 
 	#calculate log likelihood at middle location
 	
-	for(col in 1:length(wLoc)) {
-		#print("TS420")
-		#print(wLoc[col])
-		#print(wLoc)
-		#q()
-		if(wLoc[col] == 0) {
-			wLoc[col] <- .01
-		}
-		#print("TS427")
-		#print(wLoc)
-	}
 	SqDist <- ((LocX2 - MeanXTime2) ^ 2) + ((LocY2 - MeanYTime2) ^ 2)
 	Loc.g.a <- (1 / (2 * pi * VarTime2)) * exp(-0.5 * (SqDist / VarTime2))
 	Loc.g.u <- (Loc.g.a * wLoc) / MapVolume
 	#print("TS430")
 	#print((Loc.g.a * wLoc) / MapVolume)
 
+	Dist <- ((LocX2 - MeanXTime2) ^ 2) + ((LocY2 - MeanYTime2) ^ 2)
+        Loc.g.a <- (1 / (2 * pi * VarTime2)) * exp(-0.5 * (SqDist / VarTime2))
+        Loc.g.u <- (Loc.g.a * wLoc) / MapVolume
+
 	if(is.na(Loc.g.u)) { 
-		print("Loc.g.u was na. ??")
-		q()
+		print(paste("Loc.g.u was na on triplicate",i,"model",k))
+		print(Loc.g.a)
+		print(wLoc)
+		return(0)
 	} #Loc.g.u <- 10^-320} #~ need to check if we ever get 
-	for(col in 1:length(Loc.g.u)) {
-		if(Loc.g.u[col] < 0.0000000001) {
-			Loc.g.u[col] <- .01
-		}
-	}
-	LogLoc.g.u[i] <- log(Loc.g.u)
 
 	letime <- proc.time()[3]
 	lruntime <- letime - lstime
 	lruntime <- lruntime * length(cellgrid)
 	print(paste("p ~=",lruntime))
 
-	SumLogLik <- SumLogLik + LogLoc.g.u[i]
+	return(Loc.g.u)
+	#SumLogLik <- SumLogLik + SumLoc.g.u[i]
 	#print("SumLogLik")
 	#print(SumLogLik)
 	#print("Loc.g.u")
@@ -479,11 +467,14 @@ get.sum.log.liks <- function(i) {
 if(parallel) {
 	print(paste("Getting SumLogLik in parallel"))
 	clusterExport(c1,"cellgrid")
-	SumLogLikVector <- unlist(parLapply(c1,1:length(cellgrid),get.sum.log.liks))
+	LocLikVector <- unlist(parLapply(c1,1:length(cellgrid),get.sum.log.liks))
 } else {
-	SumLogLikVector <- unlist(lapply(1:length(cellgrid),get.sum.log.liks))
+	LocLikVector <- unlist(lapply(1:length(cellgrid),get.sum.log.liks))
 }
-SumLogLik <- sum(SumLogLikVector)
+SumLocLik <- sum(LocLikVector)
+PointLoc.g.u <- LocLikVector / SumLocLik
+SumLogLik <- sum(log(PointLoc.g.u))
+
 etime <- proc.time()[3]
 runtime <- etime - stime
 print(paste("Model",k," estimated runtime - ",runtime * maxit," seconds,",(runtime * maxit) / 60, "minutes"))
