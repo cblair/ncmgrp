@@ -36,20 +36,31 @@ syn <- function(al) {
 					ThetaW <- c(ThetaW, PrevSYNBBParamEsts[name][[1]])
 				}
 			}
+			print("ThetaW-syn")
+			print(ThetaW)
 			#ThetaW <- c(ThetaW[1:length(ThetaW)])
-			bbsd = exp(SYNBB.fit$partable[1,1])
+			#bbsd = exp(SYNBB.fit$partable[1,1])
+			bbsd = (SYNBB.fit$partable[1,1])
+			print("TS42-syn bbsd")
+			print(bbsd)
+		
 			#names(ThetaW) = colnames(Track)
 			#names(ThetaW) = colnames(Track)
 			#names(ThetaW) = colnames(CurrentTrack[,1:2])			
 		} #end if
 
 
-		lnbbsd = log(bbsd)
-		paramSYNBB = c(lnbbsd, ThetaW)
+		#lnbbsd = log(bbsd)
+		#paramSYNBB = c(lnbbsd, ThetaW)
 		
+		paramSYNBB = c (bbsd, ThetaW)
+		print("TS57-syn paramSYNBB")
+		print(paramSYNBB)
+	
 		SYNBB.fit <- synbbfit(CurrentTrack,start.val=paramSYNBB, k=k)
 		#change sbvnle to synbble, names only
-
+		print("TS59-syn SYNBB.fit")
+		print(SYNBB.fit)
 
 		#PrevBVNParamEsts[rownames(SBVN.fit$parTable)]=SBVN.fit$parTable[rownames(SBVN.fit$parTable),1]
 		PrevSYNBBParamEsts[rownames(SYNBB.fit$parTable)]=SYNBB.fit$parTable[rownames(SYNBB.fit$parTable),1]
@@ -58,7 +69,9 @@ syn <- function(al) {
 		#rownames(UnTransSYNBB.fit$parTable)[1]="sdbb"
 		#UnTransSYNBB.fit = SYNBB.fit$parTable[1,1:4]
 		UnTransSYNBB.fit = SYNBB.fit
-		UnTransSYNBB.fit$partable[1,1:4] = exp(SYNBB.fit$partable[1,1:4])
+		UnTransSYNBB.fit$partable[1,1:4] = log(SYNBB.fit$partable[1,1:4])
+		
+
 		#rowname(UnTransSYNBB.fit[1])="sdbb"
 		#Write output probability file to working directory
 		write.table(UnTransSYNBB.fit$partable,paste("partable_",k,".out",sep=""))

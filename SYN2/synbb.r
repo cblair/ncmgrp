@@ -60,11 +60,11 @@ profile.fname = paste(workdir,"/profile.dat", sep="")
 #################################################
 #Setup data
 global.Map.g.a <- matrix()
-alfname = paste(workdir,"/",cluster,"_all_locations.txt",sep="")
+#alfname = paste(workdir,"/",cluster,"_all_locations.txt",sep="")
 #alfname = paste(workdir,"/",cluster,"_foraging_1_all_locations.txt",sep="")
 #alfname = paste(workdir,"/",cluster,"_3hr__all_locations.txt",sep="")
 #alfname = paste(workdir,"/",cluster,"_30min_all_locations.txt",sep="")
-#alfname = paste(workdir,"/",cluster,"_10min_all_locations.txt",sep="")
+alfname = paste(workdir,"/",cluster,"_10min_all_locations.txt",sep="")
 #alfname = paste(workdir,"/",cluster,"_lidar_all_locations.txt",sep="")
 
 #al = all locations

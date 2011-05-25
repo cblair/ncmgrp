@@ -288,7 +288,7 @@ OPT.RESULTS <- c()
 maxit <- 20
 #mle.synbb = optim(start.val, synbbLogLik, method = "BFGS",hessian = TRUE, track = track,k=k,control=list(maxit=100))
 #mle.synbb = optim(start.val, synbbLogLik, method = "BFGS",hessian = TRUE, track = track,k=k,maxit=maxit,control=list(maxit=maxit))
-mle.synbb = optim(start.val, synbbLogLik, method = "CG",hessian = TRUE, track = track,k=k,maxit=maxit,control=list(maxit=maxit,reltol = .01))
+mle.synbb = optim(start.val, synbbLogLik, method = "CG",hessian = TRUE, track = track,k=k,maxit=maxit,control=list(maxit=maxit,abstol=1,reltol = .5))
 print("TS289")
 print(OPT.RESULTS)
 
@@ -336,8 +336,13 @@ AICc = AIC+(2*K*(K+1)/(length(track)-K-1))
 # Likelihood Function
 synbbLogLik = function(paramSYNBB, track, k,maxit,opt.results)
 {
-sdbb = exp(paramSYNBB[1])
-
+#sdbb = exp(paramSYNBB[1])
+sdbb = (paramSYNBB[1])
+print("paramSYNBB")
+print(paramSYNBB)
+print("sdbb")
+print(sdbb)
+ 
 #Calculate volume under non-normalized use function
 
 #taking the cellsize from the first cellgrid, they should be all the same
@@ -348,7 +353,7 @@ SumLogLik = 0
 SumLoc.g.u=array(0,nrow(track)) #i
 
 #for time est.
-print(paste("(1 - p) ~=",proc.time()[3]))
+#print(paste("(1 - p) ~=",proc.time()[3]))
 stime <- proc.time()[3]
 get.sum.log.liks <- function(i) {
 	lstime <- proc.time()[3]
@@ -400,7 +405,7 @@ get.sum.log.liks <- function(i) {
 	tsstime <- proc.time()[3]
 	for(j in 1:nrow(habmat)) {
 		SqDist <- ((habmat[j,1] - MeanXTime2) ^ 2) + ((habmat[j,2] - MeanYTime2) ^ 2)
-		PDFTime2 <- (1 / (2 * pi * VarTime2)) * exp(-0.5 * (SqDist / VarTime2))
+		PDFTime2 <- (1 / ((2 * pi * VarTime2)^.5)) * exp(-0.5 * (SqDist / VarTime2))
 		Map.g.a[j,3] <<- PDFTime2
 		Map.g.a[j,1] <<- habmat[j,1]
 		Map.g.a[j,2] <<- habmat[j,2]
@@ -435,13 +440,13 @@ get.sum.log.liks <- function(i) {
 	#calculate log likelihood at middle location
 	
 	SqDist <- ((LocX2 - MeanXTime2) ^ 2) + ((LocY2 - MeanYTime2) ^ 2)
-	Loc.g.a <- (1 / (2 * pi * VarTime2)) * exp(-0.5 * (SqDist / VarTime2))
+	Loc.g.a <- (1 / ((2 * pi * VarTime2)^.5)) * exp(-0.5 * (SqDist / VarTime2))
 	Loc.g.u <- (Loc.g.a * wLoc) / MapVolume
 	#print("TS430")
 	#print((Loc.g.a * wLoc) / MapVolume)
 
-	Dist <- ((LocX2 - MeanXTime2) ^ 2) + ((LocY2 - MeanYTime2) ^ 2)
-        Loc.g.a <- (1 / (2 * pi * VarTime2)) * exp(-0.5 * (SqDist / VarTime2))
+	SqDist <- ((LocX2 - MeanXTime2) ^ 2) + ((LocY2 - MeanYTime2) ^ 2)
+        Loc.g.a <- (1 / ((2 * pi * VarTime2)^.5)) * exp(-0.5 * (SqDist / VarTime2))
         Loc.g.u <- (Loc.g.a * wLoc) / MapVolume
 
 	if(is.na(Loc.g.u)) { 
@@ -454,7 +459,7 @@ get.sum.log.liks <- function(i) {
 	letime <- proc.time()[3]
 	lruntime <- letime - lstime
 	lruntime <- lruntime * length(cellgrid)
-	print(paste("p ~=",lruntime))
+#	print(paste("p ~=",lruntime))
 
 	return(Loc.g.u)
 	#SumLogLik <- SumLogLik + SumLoc.g.u[i]
@@ -556,7 +561,7 @@ get.bb.density <- function(sdbb, MapVolume, wLoc) {
 
 		Stand <- TotalTimeI * Alpha * (1 - Alpha) * sdbb
 
-		Loc.g.a <- 1/(2 * pi * Stand) * exp(-0.5 * (DistanceSq/Stand)) #1 over all?
+		Loc.g.a <-(1/((2 * pi * Stand)^.5)) * exp(-0.5 * (DistanceSq/Stand)) #1 over all?
 
 		bb.density <<- Loc.g.a * wLoc / MapVolume #this probably doesn't go here, density is not just from the last iteration
 	 }

@@ -93,7 +93,7 @@ for (i in 1:length(AvailList)){
  for (col in 3:ncol(AvailList[[1]])){
   AvailList[[i]][,col]=(AvailList[[i]][,col]-colmin[col])/(colmax[col]-colmin[col])
  } # end column loop
-} # end list loop
+ # end list loop
 
  #Standardize Covariates in location data
  for (col in 3:ncol(AvailList[[1]])){
