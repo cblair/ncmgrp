@@ -7,6 +7,13 @@ GPS collar telemetry, parallelized with MPI to run on an HPC cluster.
 University of Idaho and Washington State University, Colleges of Natural
 Resources. Archival research code, 2011.
 
+![Brownian bridge space use for collar 003SCF](docs/space_use.png)
+
+<sub>Computed from `BB/data/003SCF.dat` by `docs/make_figure.py`: 979 fixes over
+320 days. Left, the raw collar locations. Centre, the Brownian bridge
+utilisation distribution the model derives from them. Right, the example
+covariate grid with the 50% and 95% UD contours over it.</sub>
+
 ## Background
 
 Estimating where an animal actually spends its time from a sparse GPS track is
@@ -17,6 +24,14 @@ utilization distribution. The synoptic model extends that by fitting habitat
 covariates against the movement-derived null, so selection is measured relative
 to what the animal could plausibly have reached rather than to the study area as
 a whole.
+
+The fitted models under `BB/F111/` use the covariate set recorded in
+`f111_summer_buffer_locs_CoVar_MinMax.txt`, measured in a 240 m moving window:
+elevation, slope, forest cover, distance to trees, distance to high ground,
+distance to escape terrain, ruggedness and aspect, road distance, and modelled
+elk, wolf, and alternate-species use. Model output such as
+`..._ExpPower_Model10_Out.txt` carries the parameter table, covariance matrix,
+AICc, convergence flag, and wall-clock fit time.
 
 This work supported the co-authored paper *"The Brownian bridge synoptic model of
 habitat selection and space use for animals using GPS telemetry data."*
@@ -53,6 +68,7 @@ problem can actually absorb.
 | `SYN2/bb.r`, `syn.r`, `gen.r` | Decomposed model components |
 | `SYN2/amdahl.r` | Parallel scaling analysis, see below |
 | `merger/merge.R` | Joins GPS fixes to collar activity-sensor streams |
+| `docs/make_figure.py` | Regenerates the figure above from the collar data |
 
 Collar data files are named `<id><area><sex>.dat`, for example `003SCF.dat`,
 with `F` and `M` as the trailing sex code.
